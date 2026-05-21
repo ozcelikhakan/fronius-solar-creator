@@ -1,8 +1,17 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes)]
+  providers: [
+    // eventCoalescing: batches multiple change detection triggers into one — better performance
+    provideZoneChangeDetection({ eventCoalescing: true }),
+
+    // withComponentInputBinding: allows route params (:id) to be bound directly as @Input()
+    provideRouter(routes, withComponentInputBinding()),
+
+    // HttpClient needed for future Apollo Client and direct API calls
+    provideHttpClient()
+  ]
 };

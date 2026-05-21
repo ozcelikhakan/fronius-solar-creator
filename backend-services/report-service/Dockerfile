@@ -1,0 +1,29 @@
+
+# Multi-stage build — keeps final image small by excluding SDK tools.
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /src
+
+COPY src/report-service/report-service.csproj ./
+
+RUN dotnet restore
+
+COPY src/report-service/ ./
+
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+WORKDIR /app
+
+RUN adduser --disabled-password --gecos "" appuser && chown -R appuser /app
+
+USER appuser
+
+COPY --from=build /app/publish .
+
+EXPOSE 5004
+
+ENTRYPOINT ["dotnet", "report-service.dll"]
+
