@@ -1,0 +1,45 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+packages/
+artifacts/
+publish/
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+*.js.map
+npm-debug.log*
+.env
+.env.*
+!.env.example
+
+# Docker
+.docker/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+coverage/
+TestResults/

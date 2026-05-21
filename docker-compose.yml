@@ -1,0 +1,203 @@
+services:
+
+  mongodb:
+    image: mongo:7
+    container_name: fsc-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - fsc-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: fsc-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fsc-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: fsc-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - fsc-net
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: fsc-mosquitto
+    ports:
+      - "1883:1883"
+      - "9002:9001"
+    volumes:
+      - ./infrastructure/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+    networks:
+      - fsc-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: fsc-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - fsc-net
+
+  api-gateway:
+    build:
+      context: ./backend-services/api-gateway
+      dockerfile: Dockerfile
+    container_name: fsc-api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5000
+      JWT__Secret: "fronius-solar-creator-jwt-secret-key-2026"
+      JWT__Issuer: "fronius-solar-creator"
+      JWT__Audience: "fronius-solar-creator-client"
+      Services__ProjectService: "http://project-service:5001"
+      Services__WeatherService: "http://weather-service:5002"
+      Services__PvCalcService: "http://pv-calc-service:5003"
+      Services__ReportService: "http://report-service:5004"
+      Services__NotificationService: "http://notification-service:5005"
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - fsc-net
+
+  project-service:
+    build:
+      context: ./backend-services/project-service
+      dockerfile: Dockerfile
+    container_name: fsc-project-service
+    ports:
+      - "5001:5001"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5001
+      MongoDB__ConnectionString: "mongodb://admin:admin123@mongodb:27017"
+      MongoDB__DatabaseName: "fronius_projects"
+    depends_on:
+      - mongodb
+    networks:
+      - fsc-net
+
+  weather-service:
+    build:
+      context: ./backend-services/weather-service
+      dockerfile: Dockerfile
+    container_name: fsc-weather-service
+    ports:
+      - "5002:5002"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5002
+      Redis__ConnectionString: "redis:6379"
+      PVGIS__BaseUrl: "https://re.jrc.ec.europa.eu/api/v5_2"
+    depends_on:
+      - redis
+    networks:
+      - fsc-net
+
+  pv-calc-service:
+    build:
+      context: ./backend-services/pv-calc-service
+      dockerfile: Dockerfile
+    container_name: fsc-pv-calc-service
+    ports:
+      - "5003:5003"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5003
+      Orleans__ClusterId: "fronius-cluster"
+      Orleans__ServiceId: "pv-calc-service"
+      MongoDB__ConnectionString: "mongodb://admin:admin123@mongodb:27017"
+      RabbitMQ__ConnectionString: "amqp://admin:admin123@rabbitmq:5672"
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - fsc-net
+
+  report-service:
+    build:
+      context: ./backend-services/report-service
+      dockerfile: Dockerfile
+    container_name: fsc-report-service
+    ports:
+      - "5004:5004"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5004
+      MinIO__Endpoint: "minio:9000"
+      MinIO__AccessKey: "minioadmin"
+      MinIO__SecretKey: "minioadmin123"
+      MinIO__BucketName: "reports"
+    depends_on:
+      - minio
+    networks:
+      - fsc-net
+
+  notification-service:
+    build:
+      context: ./backend-services/notification-service
+      dockerfile: Dockerfile
+    container_name: fsc-notification-service
+    ports:
+      - "5005:5005"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5005
+      RabbitMQ__ConnectionString: "amqp://admin:admin123@rabbitmq:5672"
+      Redis__ConnectionString: "redis:6379"
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - fsc-net
+
+  frontend-app:
+    build:
+      context: ./frontend-app
+      dockerfile: Dockerfile
+    container_name: fsc-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - fsc-net
+
+volumes:
+  mongodb_data:
+  redis_data:
+  rabbitmq_data:
+  mosquitto_data:
+  minio_data:
+
+networks:
+  fsc-net:
+    driver: bridge
