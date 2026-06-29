@@ -1,0 +1,104 @@
+<div class="pv-step">
+  <header class="step-head">
+    <div>
+      <h2>PV arrays</h2>
+      <p class="subtitle">Add PV arrays — m² and kWp are calculated automatically from the module count.</p>
+    </div>
+    <div class="total">
+      <span class="label">Total</span>
+      <span class="value">{{ totalKwp() | number: '1.1-1' }} kWp</span>
+    </div>
+  </header>
+
+  <!-- Visual roof planning (Beta) — actually a separate tool, shown here as an information banner -->
+  <div class="beta-banner">🛈 Visual roof planning (Beta) — separate planning tool</div>
+
+  <button type="button" class="add-array" (click)="addArray()">+ Add PV array</button>
+
+  @for (a of arrays(); track a.id; let i = $index) {
+    <div class="array-card">
+      <div class="card-head">
+        <h3>PV array {{ i + 1 }}</h3>
+        <button type="button" class="remove" (click)="removeArray(a.id)" title="Delete">✕</button>
+      </div>
+
+      <!-- Manufacturer + model -->
+      <div class="row">
+        <label>
+          Manufacturer
+          <select [ngModel]="a.manufacturer" (ngModelChange)="onManufacturerChange(a.id, $event)">
+            @for (b of moduleDb; track b.manufacturer) {
+              <option [value]="b.manufacturer">{{ b.manufacturer }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Model
+          <select [ngModel]="a.model" (ngModelChange)="onModelChange(a.id, a.manufacturer, $event)">
+            @for (m of modelsFor(a.manufacturer); track m.model) {
+              <option [value]="m.model">{{ m.model }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <!-- Module count + automatic m²/kWp -->
+      <div class="row">
+        <label>
+          Number of modules (piece)
+          <input type="number" min="1"
+            [ngModel]="a.moduleCount"
+            (ngModelChange)="update(a.id, { moduleCount: +$event })" />
+        </label>
+        <div class="auto">
+          <span class="auto-item">{{ arrayArea(a) | number: '1.0-1' }} m²</span>
+          <span class="auto-item primary">{{ arrayKwp(a) | number: '1.2-2' }} kWp</span>
+        </div>
+      </div>
+
+      <!-- Tilt + orientation -->
+      <div class="row">
+        <label>
+          Module tilt (°)
+          <input type="number" min="0" max="90"
+            [ngModel]="a.tilt"
+            (ngModelChange)="update(a.id, { tilt: +$event })" />
+        </label>
+        <label class="orientation">
+          Module orientation (°)
+          <div class="orient-input">
+            <input type="number" min="0" max="359"
+              [ngModel]="a.orientation"
+              (ngModelChange)="update(a.id, { orientation: +$event })" />
+            <div class="quick">
+              @for (o of orientations; track o.deg) {
+                <button type="button"
+                  [class.active]="a.orientation === o.deg"
+                  (click)="update(a.id, { orientation: o.deg })">{{ o.label }}</button>
+              }
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Mounting type -->
+      <div class="mounting">
+        <span class="m-label">Mounting</span>
+        <div class="m-options">
+          @for (m of mountings; track m) {
+            <button type="button"
+              [class.active]="a.mounting === m"
+              (click)="setMounting(a.id, m)">{{ m }}</button>
+          }
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <p class="empty">No PV array yet. Add one with "+ Add PV array".</p>
+  }
+
+  <div class="nav">
+    <button type="button" class="back-btn" (click)="back()">← Back</button>
+    <button type="button" class="next-btn" (click)="saveAndNext()">Next: Inverter →</button>
+  </div>
+</div>

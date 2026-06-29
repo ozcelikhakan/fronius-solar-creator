@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { map } from 'rxjs';
-import { ConsumptionData, LocationData, Project } from '../models/project.model';
+import { ConsumptionData, LocationData, Project, PvArray } from '../models/project.model';
 
 // Shared single source of truth between steps.
 // Why a separate service: the 8 steps live in independent routes; instead of passing
@@ -19,6 +19,7 @@ export class ProjectStateService {
   readonly project = this._project.asReadonly();
   readonly location = computed(() => this._project()?.location ?? null);
   readonly consumption = computed(() => this._project()?.consumption ?? null);
+  readonly pvArrays = computed(() => this._project()?.pvArrays ?? null);
 
   // Fetches the project from the api-gateway in a single request. The schema is aligned with the Project type in CLAUDE.md.
   load(projectId: string) {
@@ -104,6 +105,24 @@ export class ProjectStateService {
     this._project.update(p =>
       p ? { ...p, consumption: { ...(p.consumption as ConsumptionData), ...consumption } } : p
     );
+  }
+
+  // Saves the PV arrays step — same optimistic pattern as the other steps.
+  savePvArrays(pvArrays: PvArray[]) {
+    this._project.update(p => (p ? { ...p, pvArrays } : p));
+    const id = this._project()?.id;
+    if (!id) return;
+
+    return this.apollo.mutate({
+      mutation: gql`
+        mutation UpdatePvArrays($id: ID!, $pvArrays: [PvArrayInput!]!) {
+          updateProjectPvArrays(id: $id, pvArrays: $pvArrays) {
+            id
+          }
+        }
+      `,
+      variables: { id, pvArrays }
+    });
   }
 
   // For development/preview: loads an empty project skeleton without the backend.

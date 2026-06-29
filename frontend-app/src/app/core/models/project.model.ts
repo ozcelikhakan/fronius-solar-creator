@@ -67,6 +67,22 @@ export interface ConsumptionData {
   evs: EvData[];
 }
 
+// Step 3 — PV array. m² and kWp are calculated automatically from the module count.
+export type Mounting = 'Roof' | 'Building integrated' | 'Free-standing';
+
+export interface PvArray {
+  id: string;
+  manufacturer: string;
+  model: string;
+  moduleCount: number;
+  // Technical values of the selected model — used for m²/kWp calculations.
+  modulePowerWp: number;
+  moduleAreaM2: number;
+  tilt: number;          // module tilt in degrees
+  orientation: number;   // azimuth: 0=North, 90=East, 180=South, 270=West
+  mounting: Mounting;
+}
+
 // Data for the other steps will be detailed later — kept loosely typed for now.
 export interface Project {
   id: string;
@@ -78,7 +94,7 @@ export interface Project {
   settings?: ProjectSettings;
   location?: LocationData;
   consumption?: ConsumptionData;
-  pvArrays?: unknown[];
+  pvArrays?: PvArray[];
   inverter?: unknown;
   sizing?: unknown;
   components?: unknown;
@@ -131,6 +147,61 @@ export function makePresetProfile(presetKey: string, id: string): LoadProfile {
 
 export function emptyConsumption(): ConsumptionData {
   return { profiles: [], fullFeedIn: false, evs: [] };
+}
+
+// ---- PV module database and helpers -----------------------------------------
+
+export const MOUNTINGS: Mounting[] = ['Roof', 'Building integrated', 'Free-standing'];
+
+// Quick orientation buttons — azimuth degrees; South is optimal in the northern hemisphere.
+export const ORIENTATIONS = [
+  { label: 'N', deg: 0 },
+  { label: 'E', deg: 90 },
+  { label: 'S', deg: 180 },
+  { label: 'W', deg: 270 }
+];
+
+// Small module database: manufacturer → models, with power Wp + module area m².
+export const PV_MODULE_DB = [
+  {
+    manufacturer: 'Meyer Burger',
+    models: [
+      { model: 'White 400', powerWp: 400, areaM2: 1.85 },
+      { model: 'Black 390', powerWp: 390, areaM2: 1.85 }
+    ]
+  },
+  {
+    manufacturer: 'LONGi',
+    models: [
+      { model: 'Hi-MO 6 410', powerWp: 410, areaM2: 1.94 },
+      { model: 'Hi-MO 6 430', powerWp: 430, areaM2: 1.94 }
+    ]
+  },
+  {
+    manufacturer: 'JA Solar',
+    models: [{ model: 'DeepBlue 4.0 420', powerWp: 420, areaM2: 1.95 }]
+  },
+  {
+    manufacturer: 'Q CELLS',
+    models: [{ model: 'Q.PEAK DUO ML-G11 400', powerWp: 400, areaM2: 1.88 }]
+  }
+] as const;
+
+// New PV array — default first manufacturer/model, south-facing, 30° tilt, roof-mounted.
+export function makePvArray(id: string): PvArray {
+  const first = PV_MODULE_DB[0];
+  const m = first.models[0];
+  return {
+    id,
+    manufacturer: first.manufacturer,
+    model: m.model,
+    moduleCount: 10,
+    modulePowerWp: m.powerWp,
+    moduleAreaM2: m.areaM2,
+    tilt: 30,
+    orientation: 180, // South
+    mounting: 'Roof'
+  };
 }
 
 // ---- E-Mobility database and helpers ----------------------------------------
