@@ -5,6 +5,6 @@ export const environment = {
     graphqlUri: 'http://localhost:5000/graphql',
 
     // Irradiance API endpoint
-    irradianceApiUri: 'http://localhost:5002/api/irradiance',
+    irradianceUri: 'http://localhost:5002/api/irradiance',
 
 };

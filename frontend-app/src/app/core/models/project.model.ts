@@ -117,7 +117,7 @@ export interface Project {
   consumption?: ConsumptionData;
   pvArrays?: PvArray[];
   inverter?: InverterData;
-  sizing?: unknown;
+  sizing?: SizingData;
   components?: unknown;
   profitability?: unknown;
 }
@@ -182,31 +182,50 @@ export const ORIENTATIONS = [
   { label: 'W', deg: 270 }
 ];
 
-// Small module database: manufacturer → models, with power Wp + module area m².
-export const PV_MODULE_DB = [
+// Module electrical spec — required for temperature compensation in the Sizing step.
+// voc/vmp: open-circuit / MPP voltage at 25°C (V); isc/imp: short-circuit / MPP current (A);
+// tempCoeffVoltage: voltage temperature coefficient (1/°C, negative).
+export interface PvModuleSpec {
+  model: string;
+  powerWp: number;
+  areaM2: number;
+  voc25: number;
+  vmp25: number;
+  isc25: number;
+  imp25: number;
+  tempCoeffVoltage: number;
+}
+
+// Small module database: manufacturer → models, with power + area + electrical spec.
+export const PV_MODULE_DB: { manufacturer: string; models: PvModuleSpec[] }[] = [
   {
     manufacturer: 'Meyer Burger',
     models: [
-      { model: 'White 400', powerWp: 400, areaM2: 1.85 },
-      { model: 'Black 390', powerWp: 390, areaM2: 1.85 }
+      { model: 'White 400', powerWp: 400, areaM2: 1.85, voc25: 39.3, vmp25: 32.9, isc25: 12.9, imp25: 12.16, tempCoeffVoltage: -0.0024 },
+      { model: 'Black 390', powerWp: 390, areaM2: 1.85, voc25: 38.9, vmp25: 32.5, isc25: 12.7, imp25: 12.0, tempCoeffVoltage: -0.0024 }
     ]
   },
   {
     manufacturer: 'LONGi',
     models: [
-      { model: 'Hi-MO 6 410', powerWp: 410, areaM2: 1.94 },
-      { model: 'Hi-MO 6 430', powerWp: 430, areaM2: 1.94 }
+      { model: 'Hi-MO 6 410', powerWp: 410, areaM2: 1.94, voc25: 37.4, vmp25: 31.3, isc25: 13.9, imp25: 13.1, tempCoeffVoltage: -0.0025 },
+      { model: 'Hi-MO 6 430', powerWp: 430, areaM2: 1.94, voc25: 38.0, vmp25: 31.8, isc25: 14.2, imp25: 13.5, tempCoeffVoltage: -0.0025 }
     ]
   },
   {
     manufacturer: 'JA Solar',
-    models: [{ model: 'DeepBlue 4.0 420', powerWp: 420, areaM2: 1.95 }]
+    models: [{ model: 'DeepBlue 4.0 420', powerWp: 420, areaM2: 1.95, voc25: 37.6, vmp25: 31.4, isc25: 14.1, imp25: 13.4, tempCoeffVoltage: -0.0026 }]
   },
   {
     manufacturer: 'Q CELLS',
-    models: [{ model: 'Q.PEAK DUO ML-G11 400', powerWp: 400, areaM2: 1.88 }]
+    models: [{ model: 'Q.PEAK DUO ML-G11 400', powerWp: 400, areaM2: 1.88, voc25: 37.0, vmp25: 31.0, isc25: 13.8, imp25: 12.9, tempCoeffVoltage: -0.0027 }]
   }
-] as const;
+];
+
+// Finds the electrical spec of the selected module in a PV array, used for the Sizing calculation.
+export function findModuleSpec(manufacturer: string, model: string): PvModuleSpec | null {
+  return PV_MODULE_DB.find(b => b.manufacturer === manufacturer)?.models.find(m => m.model === model) ?? null;
+}
 
 // ---- Inverter database: Fronius GEN24 family + commercial -------------------
 
@@ -236,6 +255,17 @@ export const INVERTER_DB: InverterSpec[] = [
   { id: 'tauro-50-3-d', model: 'Fronius Tauro 50-3-D', mppVoltageMin: 200, mppVoltageMax: 1000, maxPowerAcW: 50000, pvInputPowerWp: 75000, mpptCount: 3, phases: 3, hybrid: false, datasheetUrl: 'https://www.fronius.com' },
   { id: 'genevo-l-3p-15-h', model: 'GENEVO L-3P-15-H', mppVoltageMin: 200, mppVoltageMax: 1000, maxPowerAcW: 15000, pvInputPowerWp: 22500, mpptCount: 2, phases: 3, hybrid: true, datasheetUrl: 'https://www.fronius.com' }
 ];
+
+// Step 5 — Sizing. The result table is calculated from inverter + PV data and is derived, not stored;
+// the only stored data here is the Cable loss sub-step settings.
+export interface SizingData {
+  cableLossPercent: number;   // total cable loss percentage, default 2
+  useCableLoss: boolean;      // "Use total power loss through wiring" toggle
+}
+
+export function emptySizing(): SizingData {
+  return { cableLossPercent: 2, useCableLoss: true };
+}
 
 export function emptyInverterData(): InverterData {
   return {

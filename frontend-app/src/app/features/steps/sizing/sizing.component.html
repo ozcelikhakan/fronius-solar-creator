@@ -1,0 +1,145 @@
+<div class="sizing-step">
+  <header class="step-head">
+    <h2>Sizing</h2>
+    <p class="subtitle">Inverter–PV module compatibility, string configuration, and temperature checks.</p>
+  </header>
+
+  <nav class="sub-tabs">
+    <button type="button" [class.active]="subStep() === 'result'" (click)="subStep.set('result')">Result</button>
+    <button type="button" [class.active]="subStep() === 'manual'" (click)="subStep.set('manual')">Manual sizing</button>
+    <button type="button" [class.active]="subStep() === 'cable'" (click)="subStep.set('cable')">Cable loss</button>
+  </nav>
+
+  @if (!arraysExist()) {
+    <p class="empty">Add a PV array first for the result (Step 3).</p>
+  }
+
+  <!-- ===== RESULT ===== -->
+  @if (subStep() === 'result' && result(); as r) {
+    <div class="result-card">
+      <div class="result-head">
+        <!-- Inverter image placeholder -->
+        <div class="inv-photo">⚡</div>
+        <div class="inv-meta">
+          @if (r.recommended) { <span class="rec-tag">Recommendation</span> }
+          <h3>{{ r.inverter.model }}</h3>
+          <a [href]="r.inverter.datasheetUrl" target="_blank" rel="noopener" class="datasheet">Datasheet</a>
+        </div>
+        <div class="ratio-box" [class.warn]="!r.recommended">
+          <span class="ratio-val">{{ r.powerRatio | number: '1.0-0' }}%</span>
+          <span class="ratio-label">Power ratio</span>
+        </div>
+      </div>
+
+      @if (!r.valid) {
+        <p class="invalid">⚠️ Voc (-10°C) exceeds the inverter maximum voltage — reduce the number of modules per string.</p>
+      }
+
+      <!-- Summary: ratio + MPP power + string×modules, each PV array shown separately -->
+      <div class="summary">
+        <div class="sum-item">
+          <span class="k">MPP power at 25°C</span>
+          <span class="v">{{ r.detail.mppPowerAt25 | number }} W</span>
+        </div>
+        @for (sc of r.stringConfigs; track sc.arrayLabel) {
+          <div class="sum-item">
+            <span class="k">{{ sc.arrayLabel }} — Strings × Modules</span>
+            <span class="v">{{ sc.strings }} × {{ sc.modulesPerString }}</span>
+          </div>
+        }
+      </div>
+
+      <button type="button" class="show-more" (click)="showMore.set(!showMore())">
+        {{ showMore() ? 'Show less ▲' : 'Show more ▼' }}
+      </button>
+
+      <!-- Detail table -->
+      @if (showMore()) {
+        <table class="detail">
+          <tbody>
+            <tr><td>MPP power at 25°C</td><td>{{ r.detail.mppPowerAt25 | number }} W</td></tr>
+            <tr><td>Open circuit voltage at 70°C</td><td>{{ r.detail.vocAt70 | number: '1.1-1' }} V</td></tr>
+            <tr><td>Open circuit voltage at -10°C</td><td>{{ r.detail.vocAtMinus10 | number: '1.1-1' }} V</td></tr>
+            <tr><td>MPP voltage at 70°C</td><td>{{ r.detail.vmpAt70 | number: '1.1-1' }} V</td></tr>
+            <tr><td>MPP voltage at 0°C</td><td>{{ r.detail.vmpAt0 | number: '1.1-1' }} V</td></tr>
+            <tr><td>Short circuit current at 25°C</td><td>{{ r.detail.iscAt25 | number: '1.1-1' }} A</td></tr>
+            <tr><td>MPP circuit current at 25°C</td><td>{{ r.detail.impAt25 | number: '1.1-1' }} A</td></tr>
+            <tr><td>String fuses required</td><td>{{ r.detail.stringFusesRequired ? 'Yes' : 'No' }}</td></tr>
+            <tr><td>String combiner / Y-connector required</td><td>{{ r.detail.stringCombinerRequired ? 'Yes' : 'No' }}</td></tr>
+            <tr><td>Yield loss</td><td>{{ r.detail.yieldLoss ? 'Yes' : 'No' }}</td></tr>
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Alternative results -->
+    <h4 class="alt-title">Alternatives</h4>
+    <div class="alt-list">
+      @for (alt of alternatives(); track alt.inverter.id) {
+        <button
+          type="button"
+          class="alt-row"
+          [class.active]="alt.inverter.id === selectedInverterId()"
+          (click)="selectInverter(alt.inverter.id)"
+        >
+          <span class="alt-name">{{ alt.inverter.model }}</span>
+          @if (alt.recommended) { <span class="alt-rec">✓</span> }
+          <span class="alt-ratio">{{ alt.powerRatio | number: '1.0-0' }}%</span>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- ===== MANUAL SIZING ===== -->
+  @if (subStep() === 'manual') {
+    <div class="manual">
+      <p class="hint">Select the inverter manually — the result and temperature checks are recalculated instantly.</p>
+      <label class="manual-select">
+        Inverter
+        <select [ngModel]="selectedInverterId()" (ngModelChange)="selectInverter($event)">
+          @for (i of inverterList; track i.id) {
+            <option [value]="i.id">{{ i.model }} — {{ i.maxPowerAcW / 1000 }} kW</option>
+          }
+        </select>
+      </label>
+
+      @if (result(); as r) {
+        <div class="manual-result">
+          <div class="mr-item"><span>Power ratio</span><strong>{{ r.powerRatio | number: '1.0-0' }}%</strong></div>
+          @for (sc of r.stringConfigs; track sc.arrayLabel) {
+            <div class="mr-item"><span>{{ sc.arrayLabel }}</span><strong>{{ sc.strings }} × {{ sc.modulesPerString }}</strong></div>
+          }
+          <div class="mr-item"><span>Voc (-10°C) OK</span><strong>{{ r.valid ? 'Yes' : 'No' }}</strong></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ===== CABLE LOSS ===== -->
+  @if (subStep() === 'cable') {
+    <div class="cable">
+      <div class="beta-banner">🛈 Cable calculator (Beta) — separate calculation tool</div>
+
+      <label class="cable-toggle">
+        <input type="checkbox"
+          [ngModel]="sizingData().useCableLoss"
+          (ngModelChange)="patchSizing({ useCableLoss: $event })" />
+        Use total power loss through wiring
+      </label>
+
+      @if (sizingData().useCableLoss) {
+        <label class="cable-field">
+          Total power loss (%)
+          <input type="number" min="0" max="20" step="0.1"
+            [ngModel]="sizingData().cableLossPercent"
+            (ngModelChange)="patchSizing({ cableLossPercent: +$event })" />
+        </label>
+      }
+    </div>
+  }
+
+  <div class="nav">
+    <button type="button" class="back-btn" (click)="back()">← Back</button>
+    <button type="button" class="next-btn" (click)="saveAndNext()">Next: Components →</button>
+  </div>
+</div>
