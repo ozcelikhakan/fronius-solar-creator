@@ -1,0 +1,97 @@
+<div class="consumption-step">
+  <header class="step-head">
+    <h2>Consumption</h2>
+    <p class="subtitle">Add load profiles — the hourly consumption pattern is reflected on the chart.</p>
+  </header>
+
+  <!-- Top bar: total annual consumption + Week/Year toggle -->
+  <div class="topbar">
+    <div class="total">
+      <span class="label">Annual power consumption</span>
+      <span class="value">{{ totalAnnual() | number }} kWh/Year</span>
+    </div>
+    <div class="view-toggle">
+      <button type="button" [class.active]="view() === 'week'" (click)="view.set('week')">Week</button>
+      <button type="button" [class.active]="view() === 'year'" (click)="view.set('year')">Year</button>
+    </div>
+  </div>
+
+  <!-- Area chart -->
+  <div class="chart-card">
+    @if (series().length) {
+      <svg [attr.viewBox]="'0 0 ' + chart.W + ' ' + chart.H" class="chart" preserveAspectRatio="none">
+        <!-- baseline axis -->
+        <line
+          [attr.x1]="chart.PAD" [attr.y1]="chart.H - chart.PAD"
+          [attr.x2]="chart.W - chart.PAD" [attr.y2]="chart.H - chart.PAD"
+          class="axis"
+        />
+        <!-- each profile: semi-transparent area + clear line, so overlaps remain visible -->
+        @for (s of series(); track s.name) {
+          <path [attr.d]="s.area" [attr.fill]="s.color" fill-opacity="0.18" />
+          <path [attr.d]="s.line" [attr.stroke]="s.color" fill="none" stroke-width="2" />
+        }
+      </svg>
+      <div class="x-axis">
+        @for (lbl of xLabels(); track $index) {
+          <span>{{ lbl }}</span>
+        }
+      </div>
+    } @else {
+      <p class="empty">No load profiles added yet. Add a preset profile below.</p>
+    }
+  </div>
+
+  <!-- Preset profiles + custom load -->
+  <div class="actions">
+    @for (p of presets; track p.key) {
+      <button type="button" class="preset-btn" (click)="addPreset(p.key)">
+        <span class="dot" [style.background]="p.color"></span>
+        {{ p.name }}
+      </button>
+    }
+    <button type="button" class="add-load" (click)="addCustomLoad()">+ Add load</button>
+  </div>
+
+  <!-- List of added profiles with inline editing -->
+  @if (data().profiles.length) {
+    <div class="profile-list">
+      @for (p of data().profiles; track p.id) {
+        <div class="profile-row">
+          <span class="dot" [style.background]="p.color"></span>
+          <input
+            class="name"
+            type="text"
+            [ngModel]="p.name"
+            (ngModelChange)="updateProfile(p.id, { name: $event })"
+          />
+          <label class="kwh">
+            <input
+              type="number" min="0"
+              [ngModel]="p.annualKwh"
+              (ngModelChange)="updateProfile(p.id, { annualKwh: +$event })"
+            />
+            kWh/Year
+          </label>
+          <button type="button" class="remove" (click)="removeProfile(p.id)" title="Sil">✕</button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- 100% feed-in -->
+  <label class="feedin-row">
+    <input
+      type="checkbox"
+      [ngModel]="data().fullFeedIn"
+      (ngModelChange)="setFullFeedIn($event)"
+    />
+    100% feed-in (all production fed to the grid)
+  </label>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <button type="button" class="back-btn" (click)="back()">← Back</button>
+    <button type="button" class="next-btn" (click)="saveAndNext()">Next: PV arrays →</button>
+  </div>
+</div>

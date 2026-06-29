@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { map } from 'rxjs';
-import { LocationData, Project } from '../models/project.model';
+import { ConsumptionData, LocationData, Project } from '../models/project.model';
 
 // Shared single source of truth between steps.
 // Why a separate service: the 8 steps live in independent routes; instead of passing
@@ -18,6 +18,7 @@ export class ProjectStateService {
   // Read-only exposed views — components read the state through these, not directly.
   readonly project = this._project.asReadonly();
   readonly location = computed(() => this._project()?.location ?? null);
+  readonly consumption = computed(() => this._project()?.consumption ?? null);
 
   // Fetches the project from the api-gateway in a single request. The schema is aligned with the Project type in CLAUDE.md.
   load(projectId: string) {
@@ -55,7 +56,7 @@ export class ProjectStateService {
       );
   }
 
-  // Saves the Location step. To keep the UI working without the backend (Windows),
+  // Saves the Location step. To keep the UI working without the backend on Windows,
   // local state is updated first, then the mutation is sent — optimistic behavior.
   saveLocation(location: LocationData) {
     this.patchLocation(location);
@@ -78,6 +79,30 @@ export class ProjectStateService {
   patchLocation(location: Partial<LocationData>): void {
     this._project.update(p =>
       p ? { ...p, location: { ...(p.location as LocationData), ...location } } : p
+    );
+  }
+
+  // Saves the Consumption step — same optimistic pattern as Location.
+  saveConsumption(consumption: ConsumptionData) {
+    this.patchConsumption(consumption);
+    const id = this._project()?.id;
+    if (!id) return;
+
+    return this.apollo.mutate({
+      mutation: gql`
+        mutation UpdateConsumption($id: ID!, $consumption: ConsumptionInput!) {
+          updateProjectConsumption(id: $id, consumption: $consumption) {
+            id
+          }
+        }
+      `,
+      variables: { id, consumption }
+    });
+  }
+
+  patchConsumption(consumption: Partial<ConsumptionData>): void {
+    this._project.update(p =>
+      p ? { ...p, consumption: { ...(p.consumption as ConsumptionData), ...consumption } } : p
     );
   }
 
