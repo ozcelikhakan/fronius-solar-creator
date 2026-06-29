@@ -7,4 +7,6 @@ export const environment = {
     // Irradiance API endpoint
     irradianceUri: 'http://localhost:5002/api/irradiance',
 
+    reportApiBase: 'http://localhost:5004/api/report',
+
 };

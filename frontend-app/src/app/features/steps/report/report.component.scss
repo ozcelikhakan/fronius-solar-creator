@@ -1,0 +1,229 @@
+$accent: #0073b1;
+$border: #d9dee3;
+
+.report-step {
+  padding: 0 0 5rem;
+}
+
+// ---- Persistent header (sticky) ----
+.kpi-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 1px;
+  background: $border;
+  border-bottom: 1px solid $border;
+  padding: 0;
+
+  .kpi {
+    flex: 1;
+    background: #fff;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .kpi-val { font-size: 1.3rem; font-weight: 700; color: $accent; }
+    .kpi-label { font-size: 0.72rem; color: #6b7280; }
+  }
+  .kpi-empty {
+    flex: 1; background: #fff; padding: 1rem; color: #9ca3af; font-size: 0.85rem; text-align: center;
+  }
+}
+
+.report-body {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 820px;
+}
+
+.card {
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+
+  h3 { margin: 0 0 0.85rem; font-size: 1rem; color: #1a1a1a; }
+  h4 { margin: 0 0 0.5rem; font-size: 0.85rem; color: #6b7280; }
+
+  textarea {
+    width: 100%;
+    border: 1px solid $border;
+    border-radius: 6px;
+    padding: 0.5rem;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  &.placeholder .todo { color: #9ca3af; font-size: 0.85rem; margin: 0; }
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1.5rem;
+  font-size: 0.85rem;
+  .k { color: #6b7280; }
+  .v { color: #1a1a1a; font-weight: 500; text-align: right; }
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.kpi-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+
+  .pc {
+    background: #f5f7f9;
+    border-radius: 8px;
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    .pc-val { font-size: 1.15rem; font-weight: 700; color: $accent; }
+    .pc-label { font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
+  }
+}
+
+// ---- Energy Flow ----
+.energy-flow {
+  margin-bottom: 1.25rem;
+  .flow-svg {
+    width: 100%;
+    max-width: 320px;
+    display: block;
+    margin: 0 auto;
+    .node {
+      circle { fill: #eef6fb; stroke: $accent; stroke-width: 1.5; }
+      text { text-anchor: middle; font-size: 18px; }
+    }
+  }
+  .flow-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+}
+
+.donuts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  .donut-block h4 { margin: 0 0 0.5rem; font-size: 0.82rem; color: #1a1a1a; }
+}
+
+// ---- Annual bar chart ----
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  height: 160px;
+  border-bottom: 1px solid $border;
+  padding-bottom: 0.25rem;
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    .bars { display: flex; align-items: flex-end; gap: 2px; height: 100%; width: 100%; justify-content: center; }
+    .bar {
+      width: 7px;
+      border-radius: 2px 2px 0 0;
+      &.prod { background: #f5c518; }
+      &.cons { background: #0073b1; }
+    }
+    .bar-label { font-size: 0.62rem; color: #9ca3af; margin-top: 0.2rem; }
+  }
+}
+
+.bar-key {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.6rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 0.35rem; }
+  .sw.prod { background: #f5c518; }
+  .sw.cons { background: #0073b1; }
+}
+
+// ---- Amortization chart ----
+.amort-chart {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 1px;
+  height: 180px;
+
+  .zero-line {
+    position: absolute;
+    left: 0; right: 0;
+    border-top: 1px dashed #9ca3af;
+    z-index: 1;
+  }
+
+  .amort-col {
+    flex: 1;
+    position: relative;
+    // Bars are positioned absolutely relative to the zero line: positive upward, negative downward.
+    .amort-above {
+      position: absolute;
+      left: 0; right: 0;
+      background: #cbd5e1;
+      border-radius: 2px 2px 0 0;
+      &.pos { background: #16a34a; }
+    }
+    .amort-below {
+      position: absolute;
+      left: 0; right: 0;
+      background: #ef4444;
+      border-radius: 0 0 2px 2px;
+    }
+  }
+}
+.amort-note { font-size: 0.78rem; color: #6b7280; margin: 0.6rem 0 0; }
+
+.actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 2rem;
+  background: #fff;
+  border-top: 1px solid $border;
+
+  .right { display: flex; gap: 0.6rem; }
+  .back-btn {
+    padding: 0.6rem 1.2rem; border: 1px solid $border; border-radius: 6px;
+    background: #fff; color: #374151; cursor: pointer;
+  }
+  .ghost {
+    padding: 0.6rem 1.2rem; border: 1px solid $accent; border-radius: 6px;
+    background: #fff; color: $accent; cursor: pointer;
+    &:disabled { opacity: 0.5; cursor: default; border-color: $border; color: #9ca3af; }
+  }
+  .primary {
+    padding: 0.6rem 1.4rem; border: none; border-radius: 6px;
+    background: $accent; color: #fff; font-weight: 600; cursor: pointer;
+  }
+}
+
+@media (max-width: 640px) {
+  .overview, .kpi-cards { grid-template-columns: 1fr 1fr; }
+}

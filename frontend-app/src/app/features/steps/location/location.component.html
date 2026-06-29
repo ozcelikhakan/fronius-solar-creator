@@ -1,7 +1,7 @@
 <div class="location-step">
   <header class="step-head">
     <h2>Location</h2>
-    <p class="subtitle">Sistemin kurulacağı konumu seçin — ışınım verisi PVGIS'ten otomatik gelir.</p>
+    <p class="subtitle">Select the location where the system will be installed — irradiation data is automatically retrieved from PVGIS.</p>
   </header>
 
   <div class="layout">
@@ -11,12 +11,12 @@
         <div class="search">
           <input
             type="text"
-            placeholder="Adres ara (örn. Wels, Austria)"
+            placeholder="Search address (e.g., Wels, Austria)"
             [ngModel]="addressQuery()"
             (ngModelChange)="addressQuery.set($event)"
             (keyup.enter)="searchAddress()"
           />
-          <button type="button" (click)="searchAddress()">Ara</button>
+          <button type="button" (click)="searchAddress()">Search</button>
         </div>
 
         <!-- Map / Satellite toggle -->
@@ -34,7 +34,7 @@
     <section class="form-panel">
       <!-- Coordinates -->
       <div class="field-group">
-        <h3>Koordinatlar</h3>
+        <h3>Coordinates</h3>
         <div class="coord-row">
           <label>
             Latitude
