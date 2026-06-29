@@ -8,7 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
+    <!--Orleans core: actor-model grain runtime - each simulation runs as an isolated grain -->
+    <PackageReference Include="Microsoft.Orleans.Server" Version="9.1.2" />
+    <!-- Mongo DB grain storage: grain state survives process restarts and user disconnects-->
+    <PackageReference Include="Microsoft.Orleans.Persistence.MongoDB" Version="9.1.2">
+    <!-- RabbitMQ client: publishes simulation-complete events consumed by notification-service -->
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
   </ItemGroup>
 
 </Project>

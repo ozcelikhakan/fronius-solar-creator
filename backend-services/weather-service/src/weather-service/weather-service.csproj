@@ -8,7 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
+    <!--StackExchange.Redis: Battle-tested .Net Redis client, used to cache PVGIS responses-->
+    <PackageReference Include="StackExchange.Redis" Version="2.8.16" />
+    <!--System.Text.Json included via asp.net but listed explicitly for PVGIS deserialization clarity-->
   </ItemGroup>
 
 </Project>

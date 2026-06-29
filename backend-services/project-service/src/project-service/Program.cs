@@ -1,41 +1,39 @@
+
+using project_service.Endpoints;
+using project_service.Models;
+using project_service.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Singleton because MongoClient manages its own connection pool internally
+builder.Services.AddSingleton<ProjectRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapAuthEndpoints();
+app.MapProjectEndpoints();
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// Seed demo user on startup so the portfolio works out-of-the-box without manual setup
+await SeedDemoUserAsync(app);
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+static async Task SeedDemoUserAsync(WebApplication app)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    using var scope = app.Services.CreateScope();
+    var repo   = scope.ServiceProvider.GetRequiredService<ProjectRepository>();
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+    var email    = config["Seed:DemoEmail"]!;
+    var password = config["Seed:DemoPassword"]!;
+
+    var existing = await repo.FindByEmailAsync(email, CancellationToken.None);
+    if (existing is not null) return; // Already seeded — skip
+
+    await repo.CreateUserAsync(new User
+    {
+        Email        = email,
+        // Work factor 12 is OWASP minimum for 2024 — balances security vs login latency
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12)
+    }, CancellationToken.None);
 }

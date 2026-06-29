@@ -1,5 +1,7 @@
 services:
 
+  # ── Infrastructure ──────────────────────────────────────────────────
+
   mongodb:
     image: mongo:7
     container_name: fsc-mongodb
@@ -64,6 +66,8 @@ services:
     networks:
       - fsc-net
 
+  # ── Backend Services ─────────────────────────────────────────────────
+
   api-gateway:
     build:
       context: ./backend-services/api-gateway
@@ -100,6 +104,8 @@ services:
       ASPNETCORE_URLS: http://+:5001
       MongoDB__ConnectionString: "mongodb://admin:admin123@mongodb:27017"
       MongoDB__DatabaseName: "fronius_projects"
+      Seed__DemoEmail: "demo@fronius.com"
+      Seed__DemoPassword: "Demo1234!"
     depends_on:
       - mongodb
     networks:
@@ -178,6 +184,8 @@ services:
       - redis
     networks:
       - fsc-net
+
+  # ── Frontend ──────────────────────────────────────────────────────────
 
   frontend-app:
     build:
