@@ -1,0 +1,153 @@
+$accent: #0073b1;
+$border: #d9dee3;
+
+.components-step {
+  padding: 1.5rem 2rem;
+  max-width: 720px;
+}
+
+.step-head {
+  margin-bottom: 1rem;
+  h2 { margin: 0; color: #1a1a1a; }
+  .subtitle { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.9rem; }
+}
+
+.sub-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid $border;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  button {
+    padding: 0.55rem 1rem; border: none; background: none; cursor: pointer;
+    color: #6b7280; border-bottom: 2px solid transparent;
+    &.active { color: $accent; border-bottom-color: $accent; font-weight: 600; }
+  }
+}
+
+.hint { color: #6b7280; font-size: 0.85rem; margin: 0 0 0.75rem; }
+
+// ---- Battery ----
+.cascade-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+  .total-cap { color: $accent; }
+}
+
+.units {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8rem; color: #6b7280; margin-bottom: 0.85rem;
+  input { width: 70px; padding: 0.4rem 0.5rem; border: 1px solid $border; border-radius: 6px; }
+}
+
+.bat-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.bat-row {
+  border: 1px solid $border;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  &.selected { border-color: $accent; background: #eef6fb; }
+
+  .bat-main {
+    display: grid;
+    grid-template-columns: auto 1.4fr 1fr 1fr 0.8fr;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.85rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.83rem;
+    color: #374151;
+    .bat-name { font-weight: 600; color: #1a1a1a; }
+    .bat-series { color: #9ca3af; font-size: 0.75rem; }
+    .bat-cap, .bat-power { text-align: right; }
+  }
+
+  .chevron {
+    border: none; background: none; cursor: pointer; color: #9ca3af;
+    padding: 0 0.85rem; font-size: 0.7rem;
+  }
+
+  .bat-detail {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 0.6rem 0.85rem;
+    border-top: 1px solid #eef1f4;
+    font-size: 0.8rem;
+    color: #6b7280;
+    strong { color: #1a1a1a; }
+  }
+}
+
+// ---- Shared row for Backup / Charging ----
+.opt-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  &.selected { border-color: $accent; background: #eef6fb; }
+  .opt-name { font-weight: 600; color: #1a1a1a; }
+  .opt-desc { color: #6b7280; font-size: 0.8rem; }
+}
+
+// ---- Smart meter ----
+.rec-toggle {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.85rem; color: #374151; margin-bottom: 0.85rem;
+}
+
+.meter-head, .meter-row {
+  display: grid;
+  grid-template-columns: 2.4fr 0.7fr 1fr 0.4fr;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.82rem;
+}
+.meter-head {
+  background: #f5f7f9; color: #6b7280; font-weight: 600;
+  border-radius: 6px 6px 0 0;
+}
+.meter-row {
+  border: 1px solid $border;
+  border-top: none;
+  cursor: pointer;
+  color: #374151;
+  &:first-of-type { border-top: 1px solid $border; }
+  &.selected { background: #eef6fb; }
+  .col-model { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; color: #1a1a1a; }
+  .badge {
+    font-size: 0.62rem; font-weight: 600; background: #dcfce7; color: #15803d;
+    padding: 0.1rem 0.4rem; border-radius: 10px;
+  }
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  .back-btn {
+    padding: 0.6rem 1.2rem; border: 1px solid $border; border-radius: 6px;
+    background: #fff; color: #374151; cursor: pointer;
+  }
+  .next-btn {
+    padding: 0.6rem 1.4rem; border: none; border-radius: 6px;
+    background: $accent; color: #fff; font-weight: 600; cursor: pointer;
+  }
+}

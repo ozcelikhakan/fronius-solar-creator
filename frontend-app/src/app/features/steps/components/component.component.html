@@ -1,0 +1,129 @@
+<div class="components-step">
+  <header class="step-head">
+    <h2>Components</h2>
+    <p class="subtitle">Battery, backup, meter, and charging box selection.</p>
+  </header>
+
+  <nav class="sub-tabs">
+    <button type="button" [class.active]="subStep() === 'battery'" (click)="subStep.set('battery')">Battery</button>
+    <button type="button" [class.active]="subStep() === 'backup'" (click)="subStep.set('backup')">Backup components</button>
+    <button type="button" [class.active]="subStep() === 'meter'" (click)="subStep.set('meter')">Smart meter</button>
+    @if (hasEmobility()) {
+      <button type="button" [class.active]="subStep() === 'charging'" (click)="subStep.set('charging')">Charging box</button>
+    }
+  </nav>
+
+  <!-- ===== BATTERY ===== -->
+  @if (subStep() === 'battery') {
+    <div class="battery">
+      <div class="cascade-head">
+        <span>Cascaded storage devices with {{ data().batteryUnits }} unit</span>
+        @if (data().batteryModel) {
+          <span class="total-cap">{{ totalCapacityWh() | number }} Wh total</span>
+        }
+      </div>
+
+      <label class="units">
+        Units
+        <input type="number" min="1" max="6"
+          [ngModel]="data().batteryUnits"
+          (ngModelChange)="patch({ batteryUnits: +$event })" />
+      </label>
+
+      <div class="bat-list">
+        @for (b of batteries; track b.id) {
+          <div class="bat-row" [class.selected]="data().batteryModel === b.id">
+            <button type="button" class="bat-main" (click)="selectBattery(b.id)">
+              <input type="radio" name="battery" [checked]="data().batteryModel === b.id" (click)="$event.stopPropagation(); selectBattery(b.id)" />
+              <span class="bat-name">{{ b.model }}</span>
+              <span class="bat-series">{{ b.series }}</span>
+              <span class="bat-cap">{{ b.capacityWh | number }} Wh</span>
+              <span class="bat-power">{{ b.dischargingPowerKw | number: '1.2-2' }} kW</span>
+            </button>
+            <button type="button" class="chevron" (click)="toggleExpand(b.id)">
+              {{ expandedBattery() === b.id ? '▲' : '▼' }}
+            </button>
+
+            @if (expandedBattery() === b.id) {
+              <div class="bat-detail">
+                <span>Capacity: <strong>{{ b.capacityWh | number }} Wh</strong></span>
+                <span>Nominal discharging power: <strong>{{ b.dischargingPowerKw | number: '1.2-2' }} kW</strong></span>
+                <span>Series: <strong>{{ b.series }}</strong></span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== BACKUP ===== -->
+  @if (subStep() === 'backup') {
+    <div class="backup">
+      <p class="hint">Suitable backup component based on location:</p>
+      @for (bk of backups; track bk.id) {
+        <label class="opt-row" [class.selected]="data().backupModel === bk.id">
+          <input type="radio" name="backup"
+            [checked]="data().backupModel === bk.id"
+            (change)="patch({ backupModel: bk.id })" />
+          <span class="opt-name">{{ bk.model }}</span>
+          <span class="opt-desc">{{ bk.description }}</span>
+        </label>
+      }
+    </div>
+  }
+
+  <!-- ===== SMART METER ===== -->
+  @if (subStep() === 'meter') {
+    <div class="meter">
+      <label class="rec-toggle">
+        <input type="checkbox"
+          [ngModel]="data().smartMeterRecommendation"
+          (ngModelChange)="patch({ smartMeterRecommendation: $event })" />
+        Recommendation
+      </label>
+
+      <div class="meter-head">
+        <span class="col-model">Model</span>
+        <span>Phases</span>
+        <span>Max current</span>
+        <span>CT</span>
+      </div>
+      @for (m of visibleMeters(); track m.id) {
+        <label class="meter-row" [class.selected]="data().smartMeterModel === m.id">
+          <span class="col-model">
+            <input type="radio" name="meter"
+              [checked]="data().smartMeterModel === m.id"
+              (change)="patch({ smartMeterModel: m.id })" />
+            {{ m.model }}
+            @if (m.recommended) { <span class="badge">Recommended</span> }
+          </span>
+          <span>{{ m.phases }}-ph</span>
+          <span>{{ m.maxCurrentA | number }} A</span>
+          <span>{{ m.currentTransformer ? '✓' : '—' }}</span>
+        </label>
+      }
+    </div>
+  }
+
+  <!-- ===== CHARGING BOX ===== -->
+  @if (subStep() === 'charging') {
+    <div class="charging">
+      <p class="hint">Fronius Wattpilot models:</p>
+      @for (w of wattpilots; track w.id) {
+        <label class="opt-row" [class.selected]="data().chargingBoxModel === w.id">
+          <input type="radio" name="charging"
+            [checked]="data().chargingBoxModel === w.id"
+            (change)="patch({ chargingBoxModel: w.id })" />
+          <span class="opt-name">{{ w.model }}</span>
+          <span class="opt-desc">{{ w.phases }}-ph · {{ w.powerKw }} kW · {{ w.type }}</span>
+        </label>
+      }
+    </div>
+  }
+
+  <div class="nav">
+    <button type="button" class="back-btn" (click)="back()">← Back</button>
+    <button type="button" class="next-btn" (click)="saveAndNext()">Next: Profitability →</button>
+  </div>
+</div>

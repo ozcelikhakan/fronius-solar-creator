@@ -118,7 +118,7 @@ export interface Project {
   pvArrays?: PvArray[];
   inverter?: InverterData;
   sizing?: SizingData;
-  components?: unknown;
+  components?: ComponentSelection;
   profitability?: unknown;
 }
 
@@ -267,6 +267,27 @@ export function emptySizing(): SizingData {
   return { cableLossPercent: 2, useCableLoss: true };
 }
 
+// Step 6 — Components. The component selected from each sub-step.
+export interface ComponentSelection {
+  batteryModel: string | null;
+  batteryUnits: number;            // number of cascaded units
+  backupModel: string | null;
+  smartMeterModel: string | null;
+  smartMeterRecommendation: boolean;
+  chargingBoxModel: string | null; // only for E-Mobility projects
+}
+
+export function emptyComponents(): ComponentSelection {
+  return {
+    batteryModel: null,
+    batteryUnits: 1,
+    backupModel: null,
+    smartMeterModel: 'sm-ip',     // recommended Smart Meter IP preselected
+    smartMeterRecommendation: true,
+    chargingBoxModel: null
+  };
+}
+
 export function emptyInverterData(): InverterData {
   return {
     selectedId: null,
@@ -376,6 +397,61 @@ export function rewriteChargingGrid(ev: EvData): boolean[][] {
     return row;
   });
 }
+
+// ---- Component databases, Step 6 --------------------------------------------
+
+export interface BatterySpec {
+  id: string;
+  model: string;
+  series: 'Reserva' | 'Reserva Pro' | 'BYD';
+  capacityWh: number;
+  dischargingPowerKw: number;
+}
+
+// Fronius Reserva / Reserva Pro series + BYD — CLAUDE.md product list.
+export const BATTERY_DB: BatterySpec[] = [
+  { id: 'reserva-6.3', model: 'Reserva 6.3', series: 'Reserva', capacityWh: 6310, dischargingPowerKw: 2.87 },
+  { id: 'reserva-9.5', model: 'Reserva 9.5', series: 'Reserva', capacityWh: 9470, dischargingPowerKw: 3.0 },
+  { id: 'reserva-12.6', model: 'Reserva 12.6', series: 'Reserva', capacityWh: 12630, dischargingPowerKw: 3.0 },
+  { id: 'reserva-15.8', model: 'Reserva 15.8', series: 'Reserva', capacityWh: 15790, dischargingPowerKw: 3.0 },
+  { id: 'reserva-pro-12', model: 'Reserva Pro 12', series: 'Reserva Pro', capacityWh: 11960, dischargingPowerKw: 2.98 },
+  { id: 'reserva-pro-16', model: 'Reserva Pro 16', series: 'Reserva Pro', capacityWh: 15950, dischargingPowerKw: 3.0 },
+  { id: 'reserva-pro-20', model: 'Reserva Pro 20', series: 'Reserva Pro', capacityWh: 19940, dischargingPowerKw: 3.0 },
+  { id: 'reserva-pro-24', model: 'Reserva Pro 24', series: 'Reserva Pro', capacityWh: 23930, dischargingPowerKw: 3.0 },
+  { id: 'reserva-pro-28', model: 'Reserva Pro 28', series: 'Reserva Pro', capacityWh: 27920, dischargingPowerKw: 3.0 },
+  { id: 'reserva-pro-32', model: 'Reserva Pro 32', series: 'Reserva Pro', capacityWh: 31900, dischargingPowerKw: 3.0 },
+  { id: 'byd-hvs-12.8', model: 'BYD Battery Box HVS+ 12.8', series: 'BYD', capacityWh: 12800, dischargingPowerKw: 3.0 }
+];
+
+// Backup components — in reality, filtered by location.
+export const BACKUP_DB = [
+  { id: 'pv-point', model: 'PV Point', description: 'Single-phase emergency output during grid outages' },
+  { id: 'pv-point-comfort', model: 'PV Point Comfort', description: 'Backup supply with automatic switching' },
+  { id: 'full-backup', model: 'Full Backup', description: 'Whole-home panel backup' }
+];
+
+// Smart Meter models.
+export interface SmartMeterSpec {
+  id: string;
+  model: string;
+  phases: number;
+  maxCurrentA: number;
+  currentTransformer: boolean;
+  recommended: boolean;
+}
+
+export const SMART_METER_DB: SmartMeterSpec[] = [
+  { id: 'sm-ip', model: 'Smart Meter IP', phases: 3, maxCurrentA: 5000, currentTransformer: true, recommended: true },
+  { id: 'sm-ts-100a-1', model: 'Smart Meter TS 100A-1', phases: 1, maxCurrentA: 100, currentTransformer: false, recommended: false },
+  { id: 'sm-ts-65a-3', model: 'Smart Meter TS 65A-3', phases: 3, maxCurrentA: 65, currentTransformer: false, recommended: false },
+  { id: 'sm-wr-100-600v-3', model: 'Smart Meter WR 100-600V-3', phases: 3, maxCurrentA: 6000, currentTransformer: true, recommended: false }
+];
+
+// Fronius Wattpilot charging boxes, only for E-Mobility projects.
+export const WATTPILOT_DB = [
+  { id: 'wattpilot-go-11', model: 'Wattpilot Go 11kW-3ph', phases: 3, powerKw: 11, type: 'Mobile' },
+  { id: 'wattpilot-home-11', model: 'Wattpilot Home 11kW', phases: 3, powerKw: 11, type: 'Fixed installation' }
+];
 
 // Empty initial value for the Location step — Austria (Fronius headquarters) is the default.
 export function emptyLocation(): LocationData {
