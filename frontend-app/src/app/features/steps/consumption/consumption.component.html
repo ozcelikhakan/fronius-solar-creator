@@ -1,9 +1,22 @@
 <div class="consumption-step">
   <header class="step-head">
     <h2>Consumption</h2>
-    <p class="subtitle">Add load profiles — the hourly consumption pattern is reflected on the chart.</p>
+    <p class="subtitle">Add load profiles - the hourly consumption patterns is reflected on the chart</p>
   </header>
 
+  <!-- Sub-step tabs — E-Mobility is shown only if it is selected as a project type -->
+  <nav class="sub-tabs">
+    <button type="button" [class.active]="subStep() === 'load'" (click)="subStep.set('load')">
+      Load profile
+    </button>
+    @if (hasEmobility()) {
+      <button type="button" [class.active]="subStep() === 'emobility'" (click)="subStep.set('emobility')">
+        E-Mobility
+      </button>
+    }
+  </nav>
+
+  @if (subStep() === 'load') {
   <!-- Top bar: total annual consumption + Week/Year toggle -->
   <div class="topbar">
     <div class="total">
@@ -38,7 +51,7 @@
         }
       </div>
     } @else {
-      <p class="empty">No load profiles added yet. Add a preset profile below.</p>
+      <p class="empty">No load profiles added yet. Please add a preset profile below.</p>
     }
   </div>
 
@@ -86,10 +99,131 @@
       [ngModel]="data().fullFeedIn"
       (ngModelChange)="setFullFeedIn($event)"
     />
-    100% feed-in (all production fed to the grid)
+    100% feed-in (all production fed into the grid)
   </label>
+  }
 
-  <!-- Navigation -->
+  @if (subStep() === 'emobility') {
+  <div class="emobility">
+    <button type="button" class="create-ev" (click)="createEv()">+ Create new EV</button>
+
+    @for (ev of data().evs; track ev.id) {
+      <div class="ev-card">
+        <!-- Header: automatically calculated annual mileage and energy demand -->
+        <div class="ev-header">
+          <div class="ev-stats">
+            <span><strong>{{ yearlyMileage(ev) | number }}</strong> km/Year</span>
+            <span><strong>{{ neededEnergy(ev) | number }}</strong> kWh needed</span>
+          </div>
+          <button type="button" class="remove" (click)="removeEv(ev.id)" title="Sil">✕</button>
+        </div>
+
+        <!-- Manufacturer + model -->
+        <div class="ev-selects">
+          <label>
+            EV manufacturer
+            <select [ngModel]="ev.manufacturer" (ngModelChange)="onManufacturerChange(ev.id, $event)">
+              @for (b of evDb; track b.manufacturer) {
+                <option [value]="b.manufacturer">{{ b.manufacturer }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            EV model
+            <select [ngModel]="ev.model" (ngModelChange)="onModelChange(ev.id, ev.manufacturer, $event)">
+              @for (m of modelsFor(ev.manufacturer); track m.model) {
+                <option [value]="m.model">{{ m.model }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <!-- Advanced settings, expandable -->
+        <details class="advanced">
+          <summary>Advanced settings</summary>
+          <div class="adv-grid">
+            <label>
+              Battery capacity (kWh)
+              <input type="number" min="0"
+                [ngModel]="ev.batteryCapacityKwh"
+                (ngModelChange)="updateEv(ev.id, { batteryCapacityKwh: +$event })" />
+            </label>
+            <label>
+              Consumption (kWh/100km)
+              <input type="number" min="0" step="0.1"
+                [ngModel]="ev.consumptionKwhPer100km"
+                (ngModelChange)="updateEv(ev.id, { consumptionKwhPer100km: +$event })" />
+            </label>
+            <label>
+              Load profile
+              <select [ngModel]="ev.loadProfile" (ngModelChange)="updateEv(ev.id, { loadProfile: $event })">
+                @for (lp of evLoadProfiles; track lp) {
+                  <option [value]="lp">{{ lp }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        </details>
+
+        <!-- Daily km input, Monday to Sunday + Rewrite -->
+        <div class="daily-km">
+          <div class="dk-head">
+            <span>Daily distance (km)</span>
+            <button type="button" class="rewrite" (click)="rewriteGrid(ev.id)">Rewrite →</button>
+          </div>
+          <div class="dk-row">
+            @for (day of dayLabels; track $index) {
+              <label class="dk-cell">
+                <span>{{ day }}</span>
+                <input type="number" min="0"
+                  [ngModel]="ev.dailyKm[$index]"
+                  (ngModelChange)="updateDailyKm(ev.id, $index, +$event)" />
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Show charging profile toggle -->
+        <label class="show-charging">
+          <input type="checkbox"
+            [ngModel]="ev.showChargingProfile"
+            (ngModelChange)="updateEv(ev.id, { showChargingProfile: $event })" />
+          Show charging profile
+        </label>
+
+        <!-- 24 hours × 7 days charging grid, green = charging -->
+        @if (ev.showChargingProfile) {
+          <div class="charge-grid">
+            <div class="cg-hours">
+              <span class="cg-corner"></span>
+              @for (h of hours; track h) {
+                <span class="cg-hour">{{ h }}</span>
+              }
+            </div>
+            @for (day of dayLabels; track $index) {
+              <div class="cg-row">
+                <span class="cg-day">{{ day }}</span>
+                @for (h of hours; track h) {
+                  <button
+                    type="button"
+                    class="cg-cell"
+                    [class.on]="ev.chargingGrid[$index][h]"
+                    (click)="toggleCell(ev.id, $index, h)"
+                    [title]="h + ':00 - ' + (h + 1) + ':00'"
+                  ></button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    } @empty {
+      <p class="empty">No EVs added yet. Please add a new EV below.</p>
+    }
+  </div>
+  }
+
+  <!-- Navigation, visible in both sub-steps -->
   <div class="nav">
     <button type="button" class="back-btn" (click)="back()">← Back</button>
     <button type="button" class="next-btn" (click)="saveAndNext()">Next: PV arrays →</button>

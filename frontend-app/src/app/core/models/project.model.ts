@@ -46,16 +46,34 @@ export interface LoadProfile {
   color: string;            // used to distinguish overlapping profiles in the chart
 }
 
+// Step 2 — E-Mobility sub-step. One electric vehicle + weekly km + 7×24 charging grid.
+export interface EvData {
+  id: string;
+  manufacturer: string;
+  model: string;
+  // Advanced settings — annual energy demand is calculated from these two values.
+  batteryCapacityKwh: number;
+  consumptionKwhPer100km: number;
+  loadProfile: string;            // charging behavior profile, such as Partly home-office
+  showChargingProfile: boolean;
+  dailyKm: number[];              // length 7, separate value for each day from Mon to Sun
+  chargingGrid: boolean[][];      // 7 days × 24 hours — true = charging, shown in green
+}
+
 export interface ConsumptionData {
   profiles: LoadProfile[];
   // "100% feed-in" — all generated energy is fed into the grid; self-consumption is not calculated.
   fullFeedIn: boolean;
+  evs: EvData[];
 }
 
 // Data for the other steps will be detailed later — kept loosely typed for now.
 export interface Project {
   id: string;
   name: string;
+  // Project types selected in Wizard 2/3: Residential | Commercial | Battery |
+  // E-Mobility | Heating. The E-Mobility sub-step is shown only if E-Mobility exists in this list.
+  projectTypes?: string[];
   customer?: Customer;
   settings?: ProjectSettings;
   location?: LocationData;
@@ -112,7 +130,83 @@ export function makePresetProfile(presetKey: string, id: string): LoadProfile {
 }
 
 export function emptyConsumption(): ConsumptionData {
-  return { profiles: [], fullFeedIn: false };
+  return { profiles: [], fullFeedIn: false, evs: [] };
+}
+
+// ---- E-Mobility database and helpers ----------------------------------------
+
+// Wattpilot reference charging power (kW) — the "Rewrite" grid is filled based on this power.
+export const EV_CHARGING_POWER_KW = 11;
+
+export const DAY_LABELS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+// Charging behavior profiles — matching the predefined options in Solar.creator.
+export const EV_LOAD_PROFILES = [
+  'Partly home-office',
+  'Commuter (evening charging)',
+  'Home all day',
+  'Night charging'
+];
+
+// Small EV database: manufacturer → models, with battery kWh + consumption kWh/100km.
+export const EV_DB = [
+  {
+    manufacturer: 'Tesla',
+    models: [
+      { model: 'Model 3', batteryCapacityKwh: 60, consumptionKwhPer100km: 15 },
+      { model: 'Model Y', batteryCapacityKwh: 75, consumptionKwhPer100km: 16.5 }
+    ]
+  },
+  {
+    manufacturer: 'Volkswagen',
+    models: [
+      { model: 'ID.3', batteryCapacityKwh: 58, consumptionKwhPer100km: 15.5 },
+      { model: 'ID.4', batteryCapacityKwh: 77, consumptionKwhPer100km: 17 }
+    ]
+  },
+  {
+    manufacturer: 'BMW',
+    models: [
+      { model: 'i4', batteryCapacityKwh: 80, consumptionKwhPer100km: 16 },
+      { model: 'iX3', batteryCapacityKwh: 74, consumptionKwhPer100km: 18.5 }
+    ]
+  },
+  {
+    manufacturer: 'Hyundai',
+    models: [{ model: 'IONIQ 5', batteryCapacityKwh: 72, consumptionKwhPer100km: 17 }]
+  }
+] as const;
+
+// New EV — default first manufacturer/model + empty charging grid, all false.
+export function makeEv(id: string): EvData {
+  const first = EV_DB[0];
+  const firstModel = first.models[0];
+  return {
+    id,
+    manufacturer: first.manufacturer,
+    model: firstModel.model,
+    batteryCapacityKwh: firstModel.batteryCapacityKwh,
+    consumptionKwhPer100km: firstModel.consumptionKwhPer100km,
+    loadProfile: EV_LOAD_PROFILES[0],
+    showChargingProfile: false,
+    dailyKm: [40, 40, 40, 40, 40, 20, 10], // typical weekday/weekend default
+    chargingGrid: Array.from({ length: 7 }, () => new Array(24).fill(false))
+  };
+}
+
+// "Rewrite →" — recalculates the required charging hours from daily km and rewrites the grid.
+// Required kWh = km/100 × consumption; hours = kWh / charging power. Starting from 18:00,
+// it marks hours forward through the night, wrapping past midnight if needed.
+export function rewriteChargingGrid(ev: EvData): boolean[][] {
+  return ev.dailyKm.map(km => {
+    const row = new Array(24).fill(false);
+    const dailyKwh = (km / 100) * ev.consumptionKwhPer100km;
+    const hours = Math.min(24, Math.ceil(dailyKwh / EV_CHARGING_POWER_KW));
+    for (let h = 0; h < hours; h++) {
+      row[(18 + h) % 24] = true;
+    }
+    return row;
+  });
 }
 
 // Empty initial value for the Location step — Austria (Fronius headquarters) is the default.

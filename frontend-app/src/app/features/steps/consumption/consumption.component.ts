@@ -5,14 +5,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectStateService } from '../../../core/services/project-state.service';
 import {
   ConsumptionData,
+  DAY_LABELS,
+  EV_DB,
+  EV_LOAD_PROFILES,
+  EvData,
   LoadProfile,
   PRESET_PROFILES,
   emptyConsumption,
-  makePresetProfile
+  makeEv,
+  makePresetProfile,
+  rewriteChargingGrid
 } from '../../../core/models/project.model';
 
 // Monthly consumption weights for the year view — higher in the Austrian climate
-// due to winter heating. Sum is approximately 1.0 (annual kWh is distributed to months with this).
+// due to winter heating. Sum is approximately 1.0; annual kWh is distributed to months with this.
 const SEASONAL = [0.108, 0.099, 0.088, 0.075, 0.066, 0.06, 0.06, 0.063, 0.072, 0.084, 0.097, 0.108];
 const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 
@@ -41,13 +47,25 @@ export class ConsumptionComponent {
   private router = inject(Router);
   private state = inject(ProjectStateService);
 
-  // Exposed so the template can render preset profile buttons.
+  // Exposed so the template can render preset profile / EV data.
   readonly presets = PRESET_PROFILES;
+  readonly evDb = EV_DB;
+  readonly evLoadProfiles = EV_LOAD_PROFILES;
+  readonly dayLabels = DAY_LABELS;
+  readonly hours = Array.from({ length: 24 }, (_, h) => h); // 0..23 — grid columns
 
   // Local working copy + UI states
   data = signal<ConsumptionData>(emptyConsumption());
   view = signal<'week' | 'year'>('week');
+  // Sub-step: whether the load profile or E-Mobility view is shown.
+  subStep = signal<'load' | 'emobility'>('load');
   private idCounter = 0;
+  private evCounter = 0;
+
+  // The E-Mobility sub-step is accessible only if E-Mobility is selected as a project type.
+  hasEmobility = computed(() =>
+    (this.state.project()?.projectTypes ?? []).includes('E-Mobility')
+  );
 
   // X-axis labels change depending on the selected view: hours / months.
   xLabels = computed(() => (this.view() === 'week' ? ['0', '6', '12', '18', '24'] : MONTHS));
@@ -62,8 +80,13 @@ export class ConsumptionComponent {
 
     const existing = this.state.consumption();
     if (existing) {
-      this.data.set({ ...existing, profiles: existing.profiles.map(p => ({ ...p })) });
+      this.data.set({
+        ...existing,
+        profiles: existing.profiles.map(p => ({ ...p })),
+        evs: (existing.evs ?? []).map(e => ({ ...e })) // older records may not include evs
+      });
       this.idCounter = existing.profiles.length;
+      this.evCounter = (existing.evs ?? []).length;
     }
   }
 
@@ -101,6 +124,91 @@ export class ConsumptionComponent {
 
   setFullFeedIn(value: boolean): void {
     this.data.update(d => ({ ...d, fullFeedIn: value }));
+  }
+
+  // ---- E-Mobility -----------------------------------------------------------
+
+  createEv(): void {
+    const ev = makeEv(`ev-${this.evCounter++}`);
+    this.data.update(d => ({ ...d, evs: [...d.evs, ev] }));
+  }
+
+  removeEv(id: string): void {
+    this.data.update(d => ({ ...d, evs: d.evs.filter(e => e.id !== id) }));
+  }
+
+  updateEv(id: string, partial: Partial<EvData>): void {
+    this.data.update(d => ({
+      ...d,
+      evs: d.evs.map(e => (e.id === id ? { ...e, ...partial } : e))
+    }));
+  }
+
+  // When the manufacturer changes, jump to its first model and apply its battery/consumption values.
+  onManufacturerChange(id: string, manufacturer: string): void {
+    const brand = EV_DB.find(b => b.manufacturer === manufacturer) ?? EV_DB[0];
+    const m = brand.models[0];
+    this.updateEv(id, {
+      manufacturer,
+      model: m.model,
+      batteryCapacityKwh: m.batteryCapacityKwh,
+      consumptionKwhPer100km: m.consumptionKwhPer100km
+    });
+  }
+
+  // When the model changes, also apply that model's battery/consumption values.
+  onModelChange(id: string, manufacturer: string, model: string): void {
+    const brand = EV_DB.find(b => b.manufacturer === manufacturer);
+    const m = brand?.models.find(x => x.model === model);
+    this.updateEv(id, m ? { model, batteryCapacityKwh: m.batteryCapacityKwh, consumptionKwhPer100km: m.consumptionKwhPer100km } : { model });
+  }
+
+  // Provides the selected manufacturer's model list to the template for the model dropdown.
+  modelsFor(manufacturer: string): readonly { model: string }[] {
+    return EV_DB.find(b => b.manufacturer === manufacturer)?.models ?? [];
+  }
+
+  // Updates daily km for a specific day using an immutable array copy.
+  updateDailyKm(id: string, dayIndex: number, km: number): void {
+    this.data.update(d => ({
+      ...d,
+      evs: d.evs.map(e => {
+        if (e.id !== id) return e;
+        const dailyKm = [...e.dailyKm];
+        dailyKm[dayIndex] = km;
+        return { ...e, dailyKm };
+      })
+    }));
+  }
+
+  // "Rewrite →" — recalculates the charging grid based on daily km.
+  rewriteGrid(id: string): void {
+    this.data.update(d => ({
+      ...d,
+      evs: d.evs.map(e => (e.id === id ? { ...e, chargingGrid: rewriteChargingGrid(e) } : e))
+    }));
+  }
+
+  // Grid cell click — manually toggles a charging hour on/off.
+  toggleCell(id: string, day: number, hour: number): void {
+    this.data.update(d => ({
+      ...d,
+      evs: d.evs.map(e => {
+        if (e.id !== id) return e;
+        const grid = e.chargingGrid.map(r => [...r]);
+        grid[day][hour] = !grid[day][hour];
+        return { ...e, chargingGrid: grid };
+      })
+    }));
+  }
+
+  // Header values: annual mileage (weekly × 52.14) and annual energy demand (kWh).
+  yearlyMileage(ev: EvData): number {
+    return Math.round(ev.dailyKm.reduce((a, b) => a + b, 0) * 52.14);
+  }
+
+  neededEnergy(ev: EvData): number {
+    return Math.round((this.yearlyMileage(ev) / 100) * ev.consumptionKwhPer100km);
   }
 
   // ---- SVG area chart -------------------------------------------------------

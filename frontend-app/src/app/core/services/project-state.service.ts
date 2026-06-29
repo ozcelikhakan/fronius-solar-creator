@@ -107,8 +107,9 @@ export class ProjectStateService {
   }
 
   // For development/preview: loads an empty project skeleton without the backend.
-  // Once GraphQL is connected, this will be replaced by load().
+  // E-Mobility was added to projectTypes so the related sub-step can be tested locally;
+  // in the real flow, this list comes from new-project-wizard. Once GraphQL is connected, load() takes over.
   initLocal(id: string, name: string): void {
-    this._project.set({ id, name });
+    this._project.set({ id, name, projectTypes: ['Residential', 'E-Mobility'] });
   }
 }
