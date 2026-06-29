@@ -83,6 +83,27 @@ export interface PvArray {
   mounting: Mounting;
 }
 
+// Step 4 — Inverter. Selected inverter + filter settings in the right panel.
+export type PhaseFilter = 'all' | '1' | '3';
+
+export interface InverterFilter {
+  // Target power ratio: PV kWp / inverter AC kW × 100. Typical values: 90 / 110 / 130.
+  ratioMin: number;
+  ratioTarget: number;
+  ratioMax: number;
+  minModuleTemp: number;   // °C — used for voltage checks
+  maxModuleTemp: number;   // °C
+  phases: PhaseFilter;
+  currentFactorEnabled: boolean;
+  currentFactor: number;
+}
+
+export interface InverterData {
+  selectedId: string | null;
+  recommendation: boolean;   // prioritize / automatically select recommended options
+  filter: InverterFilter;
+}
+
 // Data for the other steps will be detailed later — kept loosely typed for now.
 export interface Project {
   id: string;
@@ -95,7 +116,7 @@ export interface Project {
   location?: LocationData;
   consumption?: ConsumptionData;
   pvArrays?: PvArray[];
-  inverter?: unknown;
+  inverter?: InverterData;
   sizing?: unknown;
   components?: unknown;
   profitability?: unknown;
@@ -187,6 +208,52 @@ export const PV_MODULE_DB = [
   }
 ] as const;
 
+// ---- Inverter database: Fronius GEN24 family + commercial -------------------
+
+export interface InverterSpec {
+  id: string;
+  model: string;
+  mppVoltageMin: number;   // V
+  mppVoltageMax: number;   // V
+  maxPowerAcW: number;     // nominal AC output power (W)
+  pvInputPowerWp: number;  // allowed maximum DC input power (Wp)
+  mpptCount: number;       // number of MPP trackers
+  phases: 1 | 3;
+  hybrid: boolean;         // battery supported
+  datasheetUrl: string;
+}
+
+// Realistic specs derived from the model list in CLAUDE.md.
+// The wide AC power range is intentional so the power-ratio filter works meaningfully.
+export const INVERTER_DB: InverterSpec[] = [
+  { id: 'primo-gen24-3.0-plus', model: 'Primo GEN24 3.0 Plus', mppVoltageMin: 80, mppVoltageMax: 800, maxPowerAcW: 3000, pvInputPowerWp: 4500, mpptCount: 2, phases: 1, hybrid: true, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'symo-gen24-3.0', model: 'Symo GEN24 3.0', mppVoltageMin: 80, mppVoltageMax: 800, maxPowerAcW: 3000, pvInputPowerWp: 4500, mpptCount: 2, phases: 3, hybrid: false, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'symo-gen24-3.0-plus', model: 'Symo GEN24 3.0 Plus', mppVoltageMin: 80, mppVoltageMax: 800, maxPowerAcW: 3000, pvInputPowerWp: 4500, mpptCount: 2, phases: 3, hybrid: true, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'symo-gen24-5.0-plus', model: 'Symo GEN24 5.0 Plus', mppVoltageMin: 80, mppVoltageMax: 800, maxPowerAcW: 5000, pvInputPowerWp: 7500, mpptCount: 2, phases: 3, hybrid: true, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'symo-gen24-6.0-plus', model: 'Symo GEN24 6.0 Plus', mppVoltageMin: 80, mppVoltageMax: 800, maxPowerAcW: 6000, pvInputPowerWp: 9000, mpptCount: 2, phases: 3, hybrid: true, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'symo-gen24-8.0-plus', model: 'Symo GEN24 8.0 Plus', mppVoltageMin: 80, mppVoltageMax: 800, maxPowerAcW: 8000, pvInputPowerWp: 12000, mpptCount: 2, phases: 3, hybrid: true, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'symo-gen24-10.0-plus', model: 'Symo GEN24 10.0 Plus', mppVoltageMin: 80, mppVoltageMax: 800, maxPowerAcW: 10000, pvInputPowerWp: 15000, mpptCount: 2, phases: 3, hybrid: true, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'tauro-50-3-d', model: 'Fronius Tauro 50-3-D', mppVoltageMin: 200, mppVoltageMax: 1000, maxPowerAcW: 50000, pvInputPowerWp: 75000, mpptCount: 3, phases: 3, hybrid: false, datasheetUrl: 'https://www.fronius.com' },
+  { id: 'genevo-l-3p-15-h', model: 'GENEVO L-3P-15-H', mppVoltageMin: 200, mppVoltageMax: 1000, maxPowerAcW: 15000, pvInputPowerWp: 22500, mpptCount: 2, phases: 3, hybrid: true, datasheetUrl: 'https://www.fronius.com' }
+];
+
+export function emptyInverterData(): InverterData {
+  return {
+    selectedId: null,
+    recommendation: true,
+    filter: {
+      ratioMin: 90,
+      ratioTarget: 110,
+      ratioMax: 130,
+      minModuleTemp: -10,
+      maxModuleTemp: 70,
+      phases: 'all',
+      currentFactorEnabled: false,
+      currentFactor: 1.0
+    }
+  };
+}
+
 // New PV array — default first manufacturer/model, south-facing, 30° tilt, roof-mounted.
 export function makePvArray(id: string): PvArray {
   const first = PV_MODULE_DB[0];
@@ -209,7 +276,7 @@ export function makePvArray(id: string): PvArray {
 // Wattpilot reference charging power (kW) — the "Rewrite" grid is filled based on this power.
 export const EV_CHARGING_POWER_KW = 11;
 
-export const DAY_LABELS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 // Charging behavior profiles — matching the predefined options in Solar.creator.
 export const EV_LOAD_PROFILES = [

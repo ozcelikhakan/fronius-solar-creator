@@ -1,0 +1,158 @@
+$accent: #0073b1;
+$border: #d9dee3;
+
+.inverter-step {
+  padding: 1.5rem 2rem;
+}
+
+.step-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  h2 { margin: 0; color: #1a1a1a; }
+  .subtitle { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.9rem; strong { color: $accent; } }
+
+  .rec-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #374151;
+  }
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+// ---- Inverter list ----
+.list {
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+
+  .list-head, .inv-row {
+    display: grid;
+    grid-template-columns: 2.4fr 1fr 0.9fr 1fr 0.5fr 0.8fr;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .list-head {
+    background: #f5f7f9;
+    color: #6b7280;
+    font-weight: 600;
+    border-bottom: 1px solid $border;
+  }
+
+  .inv-row {
+    border-bottom: 1px solid #eef1f4;
+    cursor: pointer;
+    color: #374151;
+    &:hover { background: #fafbfc; }
+    &.selected { background: #eef6fb; }
+    &.recommended { box-shadow: inset 3px 0 0 #16a34a; }
+    &:last-child { border-bottom: none; }
+
+    .col-model {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      .name { font-weight: 600; color: #1a1a1a; }
+      .ratio { color: #9ca3af; font-size: 0.72rem; }
+    }
+
+    .datasheet { color: $accent; text-decoration: none; font-size: 0.78rem; &:hover { text-decoration: underline; } }
+  }
+}
+
+.badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+  &.hybrid { background: #fef3c7; color: #92630a; }
+  &.rec { background: #dcfce7; color: #15803d; }
+}
+
+// ---- Filter panel ----
+.filter {
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 1rem;
+
+  h3 { margin: 0 0 0.85rem; font-size: 0.95rem; color: #1a1a1a; }
+
+  .f-group {
+    margin-bottom: 1rem;
+    .f-label { display: block; font-size: 0.78rem; color: #6b7280; margin-bottom: 0.4rem; }
+  }
+
+  .ratio-inputs, .temp-inputs {
+    display: flex;
+    gap: 0.4rem;
+    label { display: flex; flex-direction: column; flex: 1; font-size: 0.7rem; color: #9ca3af; gap: 0.2rem; }
+    input { padding: 0.35rem; border: 1px solid $border; border-radius: 6px; width: 100%; }
+  }
+
+  .calc-temp {
+    margin-top: 0.5rem;
+    width: 100%;
+    padding: 0.45rem;
+    border: 1px solid $accent;
+    border-radius: 6px;
+    background: #fff;
+    color: $accent;
+    cursor: pointer;
+    font-size: 0.78rem;
+  }
+
+  .phase-options {
+    display: flex;
+    gap: 0.3rem;
+    button {
+      flex: 1;
+      padding: 0.4rem;
+      border: 1px solid $border;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.78rem;
+      color: #374151;
+      &.active { background: $accent; color: #fff; border-color: $accent; }
+    }
+  }
+
+  .cf-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; color: #374151; }
+  .cf-value { margin-top: 0.4rem; width: 100%; padding: 0.35rem; border: 1px solid $border; border-radius: 6px; }
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.25rem;
+
+  .back-btn {
+    padding: 0.6rem 1.2rem; border: 1px solid $border; border-radius: 6px;
+    background: #fff; color: #374151; cursor: pointer;
+  }
+  .nav-right { display: flex; gap: 0.6rem; }
+  .manual-btn {
+    padding: 0.6rem 1.2rem; border: 1px solid $accent; border-radius: 6px;
+    background: #fff; color: $accent; cursor: pointer;
+  }
+  .next-btn {
+    padding: 0.6rem 1.4rem; border: none; border-radius: 6px;
+    background: $accent; color: #fff; font-weight: 600; cursor: pointer;
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+}

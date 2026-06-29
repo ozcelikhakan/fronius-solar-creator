@@ -1,0 +1,133 @@
+<div class="inverter-step">
+  <header class="step-head">
+    <div>
+      <h2>Inverter</h2>
+      <p class="subtitle">
+        PV power: <strong>{{ totalPvKwp() | number: '1.1-1' }} kWp</strong> — select a suitable inverter.
+      </p>
+    </div>
+    <label class="rec-toggle">
+      <input
+        type="checkbox"
+        [ngModel]="data().recommendation"
+        (ngModelChange)="toggleRecommendation($event)"
+      />
+      Recommendation
+    </label>
+  </header>
+
+  <div class="layout">
+    <!-- LEFT: inverter list -->
+    <section class="list">
+      <div class="list-head">
+        <span class="col-model">Model</span>
+        <span>MPP voltage</span>
+        <span>Max AC</span>
+        <span>PV input</span>
+        <span>MPPT</span>
+        <span></span>
+      </div>
+
+      @for (r of rows(); track r.spec.id) {
+        <label
+          class="inv-row"
+          [class.selected]="data().selectedId === r.spec.id"
+          [class.recommended]="data().recommendation && r.recommended"
+        >
+          <div class="col-model">
+            <input
+              type="radio"
+              name="inverter"
+              [checked]="data().selectedId === r.spec.id"
+              (change)="select(r.spec.id)"
+            />
+            <span class="name">{{ r.spec.model }}</span>
+            @if (r.spec.hybrid) { <span class="badge hybrid">Hybrid</span> }
+            @if (data().recommendation && r.recommended) { <span class="badge rec">Recommended</span> }
+            <span class="ratio">ratio {{ r.ratio | number: '1.0-0' }}%</span>
+          </div>
+          <span>{{ r.spec.mppVoltageMin }}–{{ r.spec.mppVoltageMax }} V</span>
+          <span>{{ r.spec.maxPowerAcW | number }} W</span>
+          <span>{{ r.spec.pvInputPowerWp | number }} Wp</span>
+          <span>{{ r.spec.mpptCount }}</span>
+          <a [href]="r.spec.datasheetUrl" target="_blank" rel="noopener" class="datasheet">Datasheet</a>
+        </label>
+      }
+    </section>
+
+    <!-- RIGHT: filter panel -->
+    <aside class="filter">
+      <h3>Filter</h3>
+
+      <div class="f-group">
+        <span class="f-label">Target ratio (%)</span>
+        <div class="ratio-inputs">
+          <label>min
+            <input type="number" [ngModel]="data().filter.ratioMin"
+              (ngModelChange)="patchFilter({ ratioMin: +$event })" />
+          </label>
+          <label>target
+            <input type="number" [ngModel]="data().filter.ratioTarget"
+              (ngModelChange)="patchFilter({ ratioTarget: +$event })" />
+          </label>
+          <label>max
+            <input type="number" [ngModel]="data().filter.ratioMax"
+              (ngModelChange)="patchFilter({ ratioMax: +$event })" />
+          </label>
+        </div>
+      </div>
+
+      <div class="f-group">
+        <span class="f-label">Module temperature (°C)</span>
+        <div class="temp-inputs">
+          <label>min
+            <input type="number" [ngModel]="data().filter.minModuleTemp"
+              (ngModelChange)="patchFilter({ minModuleTemp: +$event })" />
+          </label>
+          <label>max
+            <input type="number" [ngModel]="data().filter.maxModuleTemp"
+              (ngModelChange)="patchFilter({ maxModuleTemp: +$event })" />
+          </label>
+        </div>
+        <button type="button" class="calc-temp" (click)="calculateModuleTemp()">
+          Calculate module temperature
+        </button>
+      </div>
+
+      <div class="f-group">
+        <span class="f-label">Inverter phases</span>
+        <div class="phase-options">
+          <button type="button" [class.active]="data().filter.phases === 'all'"
+            (click)="patchFilter({ phases: 'all' })">All</button>
+          <button type="button" [class.active]="data().filter.phases === '1'"
+            (click)="patchFilter({ phases: '1' })">1-ph</button>
+          <button type="button" [class.active]="data().filter.phases === '3'"
+            (click)="patchFilter({ phases: '3' })">3-ph</button>
+        </div>
+      </div>
+
+      <div class="f-group">
+        <label class="cf-toggle">
+          <input type="checkbox" [ngModel]="data().filter.currentFactorEnabled"
+            (ngModelChange)="patchFilter({ currentFactorEnabled: $event })" />
+          Current factor
+        </label>
+        @if (data().filter.currentFactorEnabled) {
+          <input type="number" step="0.01" class="cf-value"
+            [ngModel]="data().filter.currentFactor"
+            (ngModelChange)="patchFilter({ currentFactor: +$event })" />
+        }
+      </div>
+    </aside>
+  </div>
+
+  <div class="nav">
+    <button type="button" class="back-btn" (click)="back()">← Back</button>
+    <div class="nav-right">
+      <button type="button" class="manual-btn" (click)="manualSizing()">Manual sizing</button>
+      <button type="button" class="next-btn" [disabled]="!data().selectedId" (click)="startCalculation()">
+        Start calculation →
+      </button>
+    </div>
+  </div>
+</div>
