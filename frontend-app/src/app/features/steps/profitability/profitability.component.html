@@ -1,0 +1,135 @@
+<div class="profit-step">
+  <header class="step-head">
+    <h2>Profitability</h2>
+    <p class="subtitle">Revenue inputs such as feed-in tariff and subsidies, and expense inputs such as costs and OPEX.</p>
+  </header>
+
+  <nav class="sub-tabs">
+    <button type="button" [class.active]="subStep() === 'revenues'" (click)="subStep.set('revenues')">Revenues</button>
+    <button type="button" [class.active]="subStep() === 'expenses'" (click)="subStep.set('expenses')">Expenses</button>
+  </nav>
+
+  <!-- ===== REVENUES ===== -->
+  @if (subStep() === 'revenues') {
+    <div class="panel">
+      <div class="field-group">
+        <h3>Feed-in tariff</h3>
+        <div class="row">
+          <label>
+            Feed-in tariff (€/kWh)
+            <input type="number" min="0" step="0.001"
+              [ngModel]="data().revenues.feedInTariff"
+              (ngModelChange)="patchRevenues({ feedInTariff: +$event })" />
+          </label>
+          <label>
+            Duration (Years)
+            <input type="number" min="0"
+              [ngModel]="data().revenues.feedInDurationYears"
+              (ngModelChange)="patchRevenues({ feedInDurationYears: +$event })" />
+          </label>
+          <label>
+            Tariff after duration (€/kWh)
+            <input type="number" min="0" step="0.001"
+              [ngModel]="data().revenues.feedInTariffAfter"
+              (ngModelChange)="patchRevenues({ feedInTariffAfter: +$event })" />
+          </label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="group-head">
+          <h3>Subsidies</h3>
+          <button type="button" class="add-btn" (click)="addSubsidy()">+ Add subsidy</button>
+        </div>
+
+        @for (s of data().revenues.subsidies; track s.id) {
+          <div class="subsidy-row">
+            <div class="type-toggle">
+              <button type="button" [class.active]="s.type === 'one-time'" (click)="setSubsidyType(s.id, 'one-time')">One-time</button>
+              <button type="button" [class.active]="s.type === 'ongoing'" (click)="setSubsidyType(s.id, 'ongoing')">Ongoing</button>
+            </div>
+            <input type="number" min="0" class="amount"
+              [ngModel]="s.amount"
+              (ngModelChange)="updateSubsidy(s.id, { amount: +$event })" />
+            <select [ngModel]="s.unit" (ngModelChange)="updateSubsidy(s.id, { unit: $event })">
+              @for (u of subsidyUnits; track u) { <option [value]="u">{{ u }}</option> }
+            </select>
+            <button type="button" class="remove" (click)="removeSubsidy(s.id)" title="Delete">✕</button>
+          </div>
+        } @empty {
+          <p class="empty">No subsidy has been added.</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===== EXPENSES ===== -->
+  @if (subStep() === 'expenses') {
+    <div class="panel">
+      <div class="field-group">
+        <h3>Electricity cost</h3>
+        <div class="row">
+          <label>
+            Cost
+            <input type="number" min="0" step="0.001"
+              [ngModel]="data().expenses.electricityCost"
+              (ngModelChange)="patchExpenses({ electricityCost: +$event })" />
+          </label>
+          <div class="unit-toggle">
+            @for (u of electricityUnits; track u) {
+              <button type="button" [class.active]="data().expenses.electricityUnit === u"
+                (click)="patchExpenses({ electricityUnit: u })">{{ u }}</button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <h3>System & operation</h3>
+        <div class="row">
+          <label>
+            Total system cost (€)
+            <input type="number" min="0"
+              [ngModel]="data().expenses.totalSystemCost"
+              (ngModelChange)="patchExpenses({ totalSystemCost: +$event })" />
+          </label>
+          <label>
+            Calculation period (Years)
+            <input type="number" min="1"
+              [ngModel]="data().expenses.calculationPeriodYears"
+              (ngModelChange)="patchExpenses({ calculationPeriodYears: +$event })" />
+          </label>
+          <label>
+            OPEX — Annual fixed cost (€)
+            <input type="number" min="0"
+              [ngModel]="data().expenses.opexAnnual"
+              (ngModelChange)="patchExpenses({ opexAnnual: +$event })" />
+          </label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="group-head">
+          <h3>Custom cost items</h3>
+          <button type="button" class="add-btn" (click)="addCustomCost()">+ Add custom cost item</button>
+        </div>
+
+        @for (c of data().expenses.customCosts; track c.id) {
+          <div class="cost-row">
+            <input type="text" class="label" [ngModel]="c.label" (ngModelChange)="updateCustomCost(c.id, { label: $event })" />
+            <input type="number" min="0" class="amount" [ngModel]="c.amount" (ngModelChange)="updateCustomCost(c.id, { amount: +$event })" />
+            <span class="cur">€</span>
+            <button type="button" class="remove" (click)="removeCustomCost(c.id)" title="Delete">✕</button>
+          </div>
+        } @empty {
+          <p class="empty">No custom item has been added.</p>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="nav">
+    <button type="button" class="back-btn" (click)="back()">← Back</button>
+    <button type="button" class="next-btn" (click)="saveAndNext()">Next: Report →</button>
+  </div>
+</div>

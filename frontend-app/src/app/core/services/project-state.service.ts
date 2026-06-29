@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { map } from 'rxjs';
-import { ComponentSelection, ConsumptionData, InverterData, LocationData, Project, PvArray, SizingData } from '../models/project.model';
+import { ComponentSelection, ConsumptionData, InverterData, LocationData, ProfitabilityData, Project, PvArray, SizingData } from '../models/project.model';
 
 // Shared single source of truth between steps.
 // Why a separate service: the 8 steps live in independent routes; instead of passing
@@ -23,6 +23,7 @@ export class ProjectStateService {
   readonly inverter = computed(() => this._project()?.inverter ?? null);
   readonly sizing = computed(() => this._project()?.sizing ?? null);
   readonly components = computed(() => this._project()?.components ?? null);
+  readonly profitability = computed(() => this._project()?.profitability ?? null);
 
   // Fetches the project from the api-gateway in a single request. The schema is aligned with the Project type in CLAUDE.md.
   load(projectId: string) {
@@ -179,6 +180,24 @@ export class ProjectStateService {
         }
       `,
       variables: { id, components }
+    });
+  }
+
+  // Saves the Profitability step.
+  saveProfitability(profitability: ProfitabilityData) {
+    this._project.update(p => (p ? { ...p, profitability } : p));
+    const id = this._project()?.id;
+    if (!id) return;
+
+    return this.apollo.mutate({
+      mutation: gql`
+        mutation UpdateProfitability($id: ID!, $profitability: ProfitabilityInput!) {
+          updateProjectProfitability(id: $id, profitability: $profitability) {
+            id
+          }
+        }
+      `,
+      variables: { id, profitability }
     });
   }
 

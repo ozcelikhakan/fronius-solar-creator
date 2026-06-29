@@ -119,7 +119,7 @@ export interface Project {
   inverter?: InverterData;
   sizing?: SizingData;
   components?: ComponentSelection;
-  profitability?: unknown;
+  profitability?: ProfitabilityData;
 }
 
 // Normalizes the array sum to 1.0 — preserving the ratio of the shares.
@@ -265,6 +265,62 @@ export interface SizingData {
 
 export function emptySizing(): SizingData {
   return { cableLossPercent: 2, useCableLoss: true };
+}
+
+// Step 7 — Profitability.
+export type SubsidyType = 'one-time' | 'ongoing';
+export type SubsidyUnit = '€' | '€/kWp' | '€/kWh';
+
+export interface Subsidy {
+  id: string;
+  type: SubsidyType;
+  unit: SubsidyUnit;
+  amount: number;
+}
+
+export type ElectricityUnit = 'Month' | 'Year' | 'kWh';
+
+export interface CustomCost {
+  id: string;
+  label: string;
+  amount: number;
+}
+
+export interface ProfitabilityData {
+  revenues: {
+    feedInTariff: number;        // €/kWh
+    feedInDurationYears: number;
+    feedInTariffAfter: number;   // €/kWh after the duration ends
+    subsidies: Subsidy[];
+  };
+  expenses: {
+    electricityCost: number;
+    electricityUnit: ElectricityUnit;
+    totalSystemCost: number;     // €
+    calculationPeriodYears: number;
+    opexAnnual: number;          // fixed annual expense (€)
+    customCosts: CustomCost[];
+  };
+}
+
+// Realistic defaults suitable for the Austria context.
+export function emptyProfitability(): ProfitabilityData {
+  return {
+    revenues: {
+      feedInTariff: 0.08,
+      feedInDurationYears: 20,
+      feedInTariffAfter: 0.05,
+      subsidies: []
+    },
+    expenses: {
+      electricityCost: 0.25,
+      electricityUnit: 'kWh',
+      totalSystemCost: 12000,
+      calculationPeriodYears: 20,
+      opexAnnual: 100,
+      customCosts: []
+    }
+  };
 }
 
 // Step 6 — Components. The component selected from each sub-step.
