@@ -14,17 +14,24 @@
     /*Branding colors*/
     --color-brand-red: #e2001a;
     --color-danger: #c0263a;
+    --color-danger-tint: #fef2f2;
+    --color-danger-border: #fecaca;
     --color-success: #1f9d55;
+    --color-success-tint: #dcfce7;
     --color-warning: #c67c05;
+    --color-warning-tint: #fef3c7;
 
     /*Neutral text - surfaces*/
     --color-text: #16202a; /*Primary text color*/
     --color-text-subtle: #3a4756; /*Secondary text color*/
     --color-text-muted: #6b7684; 
+    --color-text-faint: #9ca3af; /*Tertiary text color*/
     --color-surface: #ffffff; /*Cards, modals, etc.*/
+    --color-surface-alt: #f5f7f9;
     --color-bg: #eef2f5; /*Page background*/
     --color-border: #d7dee5;
     --color-border-strong: #bcc6cf;
+    --color-divider: #eef1f4;
 
     /*Gap Scale*/
     --space-1: 0.25rem;
