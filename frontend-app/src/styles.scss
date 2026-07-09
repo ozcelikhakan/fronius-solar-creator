@@ -1,1 +1,150 @@
-/* You can add global styles to this file, and also import other style files */
+
+:root {
+    /*Primary Colors*/
+    --color-primary: #0073b1; /*Buttons, active links*/
+    --color-primary-dark: #005b8f; /*Hover state for buttons and links*/
+    --color-primary-tint: #e6f2f8; /*Light background*/
+
+    /*Dark surfaces - sidebar*/
+    --sidebar-bg: #0a2540;
+    --sidebar-hover: #rgba(255, 255, 255, 0.06);
+    --sidebar-text:  #rgba(255, 255, 255, 0.62);
+    --sidebar-text-strong: #ffffff
+
+    /*Branding colors*/
+    --color-brand-red: #e2001a;
+    --color-danger: #c0263a;
+    --color-success: #1f9d55;
+    --color-warning: #c67c05;
+
+    /*Neutral text - surfaces*/
+    --color-text: #16202a; /*Primary text color*/
+    --color-text-subtle: #3a4756; /*Secondary text color*/
+    --color-text-muted: #6b7684; 
+    --color-surface: #ffffff; /*Cards, modals, etc.*/
+    --color-bg: #eef2f5; /*Page background*/
+    --color-border: #d7dee5;
+    --color-border-strong: #bcc6cf;
+
+    /*Gap Scale*/
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+
+    /*Radius Scale*/
+    --radius-sm: 4px;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 999px
+
+    /*Shadow*/
+    --shadow-sm: 0 1px 2px rgba(16,32,42,0.06);
+    --shadow: 0 2px 8px rgba(16,32,42,0.08);
+    --shadow-lg: 0 8px 24px rgba(16,32,42,0.12);
+
+    /*Typography*/
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+
+    /*Focus ring*/
+    --focus-ring: 0 0 0 3px rgba(0,115,177,0.28);
+
+    *,
+    *::before,
+    *::after {box-sizing: border-box; }
+
+    html,body {height: 100%; }
+
+    body {
+        margin: 0;
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--color-text);
+        background: var(--color-bg);
+        -webkit-font-smoothing: antialiased; /*MacOS*/
+        -moz-osx-font-smoothing: grayscale; 
+        text-rendering: optimizeLegibility; /*Windows*/
+    }
+
+    h1,h2,h3,h4 {
+        margin: 0;
+        color: var(--color-text);
+        font-weight: 600;
+        line-height: 1.25;
+    }
+
+    a {
+        color:var(--color-primary);
+        text-decoration: none;
+        &:hover {
+            color: var(--color-primary-dark);
+        }
+    }
+
+    input,select,textarea,button {font-family: inherit; font-size: inherit; }
+
+    input:not([type='range']), select, textarea {
+        padding: 0.5rem 0.7rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        background: var(--color-surface);
+        color: var(--color-text);
+        transition: border-color 0.15s, box-shadow 0.15s;
+
+        &:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: var(--focus-ring);
+        }
+    }
+
+    :focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+        border-radius: var(--radius-sm);
+    }   
+
+    button {cursor: pointer;}
+    button:disabled {opacity: 0.55; cursor: default;}
+
+    /*Reuseable utility classes*/
+
+    .btn-primary {
+        padding: 0.6rem 1.4rem;
+        border: none;
+        border-radius: var(--radius);
+        background: var(--color-primary);
+        color: #fff;
+        font-weight: 600;
+        transition: background 0.15s;
+        &:hover:not(:disabled) {
+            background: var(--color-primary-dark);
+        }
+    }
+
+    .btn-ghost {
+        padding: 0.55rem 1.1rem;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius);
+        background: var(--color-surface);
+        color: var(--color-text-subtle);
+        font-weight: 500;
+        transition: border-color 0.15s, color 0.15s;
+        &:hover:not(:disabled) {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+    }
+
+    .card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+}
