@@ -1,6 +1,3 @@
-$accent: #0073b1;
-$border: #d9dee3;
-
 .sizing-step {
   padding: 1.5rem 2rem;
   max-width: 720px;
@@ -15,12 +12,12 @@ $border: #d9dee3;
 .sub-tabs {
   display: flex;
   gap: 0.25rem;
-  border-bottom: 1px solid $border;
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: 1rem;
   button {
     padding: 0.55rem 1rem; border: none; background: none; cursor: pointer;
     color: #6b7280; border-bottom: 2px solid transparent;
-    &.active { color: $accent; border-bottom-color: $accent; font-weight: 600; }
+    &.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 600; }
   }
 }
 
@@ -28,7 +25,7 @@ $border: #d9dee3;
 
 // ---- Result ----
 .result-card {
-  border: 1px solid $border;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.25rem;
@@ -42,7 +39,7 @@ $border: #d9dee3;
   .inv-photo {
     width: 56px; height: 56px;
     display: flex; align-items: center; justify-content: center;
-    background: #eef6fb; border-radius: 8px; font-size: 1.6rem;
+    background: var(--color-primary-tint); border-radius: 8px; font-size: 1.6rem;
   }
   .inv-meta {
     flex: 1;
@@ -51,12 +48,12 @@ $border: #d9dee3;
       background: #dcfce7; color: #15803d; padding: 0.1rem 0.45rem; border-radius: 10px;
     }
     h3 { margin: 0.2rem 0; font-size: 1rem; color: #1a1a1a; }
-    .datasheet { color: $accent; font-size: 0.78rem; text-decoration: none; &:hover { text-decoration: underline; } }
+    .datasheet { color: var(--color-primary); font-size: 0.78rem; text-decoration: none; &:hover { text-decoration: underline; } }
   }
   .ratio-box {
     display: flex; flex-direction: column; align-items: center;
-    padding: 0.5rem 0.85rem; border-radius: 8px; background: #eef6fb;
-    .ratio-val { font-size: 1.4rem; font-weight: 700; color: $accent; }
+    padding: 0.5rem 0.85rem; border-radius: 8px; background: var(--color-primary-tint);
+    .ratio-val { font-size: 1.4rem; font-weight: 700; color: var(--color-primary); }
     .ratio-label { font-size: 0.68rem; color: #6b7280; }
     &.warn { background: #fef3c7; .ratio-val { color: #92630a; } }
   }
@@ -82,7 +79,7 @@ $border: #d9dee3;
 
 .show-more {
   margin-top: 0.85rem;
-  border: none; background: none; color: $accent; cursor: pointer; font-size: 0.82rem;
+  border: none; background: none; color: var(--color-primary); cursor: pointer; font-size: 0.82rem;
 }
 
 .detail {
@@ -99,13 +96,13 @@ $border: #d9dee3;
   display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem;
   .alt-row {
     display: flex; align-items: center; gap: 0.5rem;
-    border: 1px solid $border; border-radius: 6px; padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border); border-radius: 6px; padding: 0.5rem 0.75rem;
     background: #fff; cursor: pointer; font-size: 0.85rem; color: #374151;
     .alt-name { flex: 1; text-align: left; font-weight: 600; color: #1a1a1a; }
     .alt-rec { color: #15803d; }
     .alt-ratio { color: #6b7280; }
-    &.active { border-color: $accent; background: #eef6fb; }
-    &:hover { border-color: $accent; }
+    &.active { border-color: var(--color-primary); background: var(--color-primary-tint); }
+    &:hover { border-color: var(--color-primary); }
   }
 }
 
@@ -114,7 +111,7 @@ $border: #d9dee3;
   .hint { color: #6b7280; font-size: 0.85rem; }
   .manual-select {
     display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.8rem; color: #6b7280; max-width: 360px;
-    select { padding: 0.45rem 0.5rem; border: 1px solid $border; border-radius: 6px; }
+    select { padding: 0.45rem 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; }
   }
   .manual-result {
     display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;
@@ -129,13 +126,13 @@ $border: #d9dee3;
 // ---- Cable loss ----
 .cable {
   .beta-banner {
-    background: #eef6fb; border: 1px solid #cfe6f3; color: #2c6f96;
+    background: var(--color-primary-tint); border: 1px solid #cfe6f3; color: #2c6f96;
     border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.82rem; margin-bottom: 1rem;
   }
   .cable-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #374151; }
   .cable-field {
     display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.85rem; font-size: 0.8rem; color: #6b7280; max-width: 200px;
-    input { padding: 0.45rem 0.5rem; border: 1px solid $border; border-radius: 6px; }
+    input { padding: 0.45rem 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; }
   }
 }
 
@@ -144,11 +141,11 @@ $border: #d9dee3;
   justify-content: space-between;
   margin-top: 1.5rem;
   .back-btn {
-    padding: 0.6rem 1.2rem; border: 1px solid $border; border-radius: 6px;
+    padding: 0.6rem 1.2rem; border: 1px solid var(--color-border); border-radius: 6px;
     background: #fff; color: #374151; cursor: pointer;
   }
   .next-btn {
     padding: 0.6rem 1.4rem; border: none; border-radius: 6px;
-    background: $accent; color: #fff; font-weight: 600; cursor: pointer;
+    background: var(--color-primary); color: #fff; font-weight: 600; cursor: pointer;
   }
 }

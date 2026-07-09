@@ -1,6 +1,3 @@
-$accent: #0073b1;
-$border: #d9dee3;
-
 .inverter-step {
   padding: 1.5rem 2rem;
 }
@@ -12,7 +9,7 @@ $border: #d9dee3;
   margin-bottom: 1rem;
 
   h2 { margin: 0; color: #1a1a1a; }
-  .subtitle { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.9rem; strong { color: $accent; } }
+  .subtitle { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.9rem; strong { color: var(--color-primary); } }
 
   .rec-toggle {
     display: flex;
@@ -32,7 +29,7 @@ $border: #d9dee3;
 
 // ---- Inverter list ----
 .list {
-  border: 1px solid $border;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   overflow: hidden;
 
@@ -49,7 +46,7 @@ $border: #d9dee3;
     background: #f5f7f9;
     color: #6b7280;
     font-weight: 600;
-    border-bottom: 1px solid $border;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .inv-row {
@@ -57,7 +54,7 @@ $border: #d9dee3;
     cursor: pointer;
     color: #374151;
     &:hover { background: #fafbfc; }
-    &.selected { background: #eef6fb; }
+    &.selected { background: var(--color-primary-tint); }
     &.recommended { box-shadow: inset 3px 0 0 #16a34a; }
     &:last-child { border-bottom: none; }
 
@@ -70,7 +67,7 @@ $border: #d9dee3;
       .ratio { color: #9ca3af; font-size: 0.72rem; }
     }
 
-    .datasheet { color: $accent; text-decoration: none; font-size: 0.78rem; &:hover { text-decoration: underline; } }
+    .datasheet { color: var(--color-primary); text-decoration: none; font-size: 0.78rem; &:hover { text-decoration: underline; } }
   }
 }
 
@@ -85,7 +82,7 @@ $border: #d9dee3;
 
 // ---- Filter panel ----
 .filter {
-  border: 1px solid $border;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem;
 
@@ -100,17 +97,17 @@ $border: #d9dee3;
     display: flex;
     gap: 0.4rem;
     label { display: flex; flex-direction: column; flex: 1; font-size: 0.7rem; color: #9ca3af; gap: 0.2rem; }
-    input { padding: 0.35rem; border: 1px solid $border; border-radius: 6px; width: 100%; }
+    input { padding: 0.35rem; border: 1px solid var(--color-border); border-radius: 6px; width: 100%; }
   }
 
   .calc-temp {
     margin-top: 0.5rem;
     width: 100%;
     padding: 0.45rem;
-    border: 1px solid $accent;
+    border: 1px solid var(--color-primary);
     border-radius: 6px;
     background: #fff;
-    color: $accent;
+    color: var(--color-primary);
     cursor: pointer;
     font-size: 0.78rem;
   }
@@ -121,18 +118,18 @@ $border: #d9dee3;
     button {
       flex: 1;
       padding: 0.4rem;
-      border: 1px solid $border;
+      border: 1px solid var(--color-border);
       border-radius: 6px;
       background: #fff;
       cursor: pointer;
       font-size: 0.78rem;
       color: #374151;
-      &.active { background: $accent; color: #fff; border-color: $accent; }
+      &.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
     }
   }
 
   .cf-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; color: #374151; }
-  .cf-value { margin-top: 0.4rem; width: 100%; padding: 0.35rem; border: 1px solid $border; border-radius: 6px; }
+  .cf-value { margin-top: 0.4rem; width: 100%; padding: 0.35rem; border: 1px solid var(--color-border); border-radius: 6px; }
 }
 
 .nav {
@@ -142,17 +139,17 @@ $border: #d9dee3;
   margin-top: 1.25rem;
 
   .back-btn {
-    padding: 0.6rem 1.2rem; border: 1px solid $border; border-radius: 6px;
+    padding: 0.6rem 1.2rem; border: 1px solid var(--color-border); border-radius: 6px;
     background: #fff; color: #374151; cursor: pointer;
   }
   .nav-right { display: flex; gap: 0.6rem; }
   .manual-btn {
-    padding: 0.6rem 1.2rem; border: 1px solid $accent; border-radius: 6px;
-    background: #fff; color: $accent; cursor: pointer;
+    padding: 0.6rem 1.2rem; border: 1px solid var(--color-primary); border-radius: 6px;
+    background: #fff; color: var(--color-primary); cursor: pointer;
   }
   .next-btn {
     padding: 0.6rem 1.4rem; border: none; border-radius: 6px;
-    background: $accent; color: #fff; font-weight: 600; cursor: pointer;
+    background: var(--color-primary); color: #fff; font-weight: 600; cursor: pointer;
     &:disabled { opacity: 0.5; cursor: default; }
   }
 }

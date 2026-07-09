@@ -1,17 +1,13 @@
-// Fronius accent color — kept in one place for consistency across steps.
-$accent: #0073b1;
-$border: #d9dee3;
+
 
 .location-step {
   padding: 1.5rem 2rem;
 }
-
 .step-head {
   margin-bottom: 1.25rem;
   h2 { margin: 0; color: #1a1a1a; }
   .subtitle { margin: 0.25rem 0 0; color: #6b7280; font-size: 0.9rem; }
 }
-
 // Wide map on the left, fixed form on the right — two-column layout from Solar.creator.
 .layout {
   display: grid;
@@ -19,85 +15,73 @@ $border: #d9dee3;
   gap: 1.5rem;
   align-items: start;
 }
-
 .map-panel {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
-
 .map-toolbar {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
   flex-wrap: wrap;
-
   .search {
     display: flex;
     flex: 1;
     gap: 0.5rem;
-    input { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid $border; border-radius: 6px; }
+    input { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: 6px; }
     button {
       padding: 0.5rem 1rem; border: none; border-radius: 6px;
-      background: $accent; color: #fff; cursor: pointer;
+      background: var(--color-primary); color: #fff; cursor: pointer;
     }
   }
-
   .layer-toggle {
     display: flex;
-    border: 1px solid $border;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     overflow: hidden;
     button {
       padding: 0.5rem 1rem; border: none; background: #fff; cursor: pointer; color: #374151;
-      &.active { background: $accent; color: #fff; }
+      &.active { background: var(--color-primary); color: #fff; }
     }
   }
 }
-
-// If the Leaflet container does not receive a height, the map will not be visible — fixed height is required.
+// If the Leaflet container does not get a height, the map will not be visible — a fixed height is required.
 .map {
   height: 460px;
   width: 100%;
   border-radius: 8px;
-  border: 1px solid $border;
+  border: 1px solid var(--color-border);
 }
-
 .form-panel {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
-
 .field-group {
-  border: 1px solid $border;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1rem;
-
   h3 { margin: 0 0 0.75rem; font-size: 0.95rem; color: #1a1a1a; }
 }
-
 .coord-row {
   display: flex;
   gap: 0.75rem;
   label { display: flex; flex-direction: column; flex: 1; font-size: 0.8rem; color: #6b7280; gap: 0.25rem; }
-  input { padding: 0.4rem 0.5rem; border: 1px solid $border; border-radius: 6px; }
+  input { padding: 0.4rem 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; }
 }
-
 .address { margin: 0.75rem 0 0; font-size: 0.8rem; color: #374151; }
-
 .irradiance {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   .fetch-btn {
-    padding: 0.45rem 0.9rem; border: 1px solid $accent; border-radius: 6px;
-    background: #fff; color: $accent; cursor: pointer;
+    padding: 0.45rem 0.9rem; border: 1px solid var(--color-primary); border-radius: 6px;
+    background: #fff; color: var(--color-primary); cursor: pointer;
     &:disabled { opacity: 0.6; cursor: default; }
   }
   .value { font-weight: 600; color: #1a1a1a; }
 }
-
 .slider-label {
   display: block;
   margin-top: 0.85rem;
@@ -105,9 +89,7 @@ $border: #d9dee3;
   color: #6b7280;
   input[type='range'] { width: 100%; margin-top: 0.4rem; }
 }
-
 .adjusted { margin: 0.5rem 0 0; font-size: 0.85rem; color: #374151; }
-
 .toggle-row {
   display: flex;
   align-items: center;
@@ -116,7 +98,6 @@ $border: #d9dee3;
   font-size: 0.85rem;
   color: #374151;
 }
-
 .inline-field {
   display: flex;
   flex-direction: column;
@@ -124,17 +105,15 @@ $border: #d9dee3;
   margin-top: 0.4rem;
   font-size: 0.8rem;
   color: #6b7280;
-  input { padding: 0.4rem 0.5rem; border: 1px solid $border; border-radius: 6px; max-width: 140px; }
+  input { padding: 0.4rem 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; max-width: 140px; }
 }
-
 .error { color: #b91c1c; font-size: 0.85rem; margin: 0; }
-
 .next-btn {
   align-self: flex-end;
   padding: 0.6rem 1.4rem;
   border: none;
   border-radius: 6px;
-  background: $accent;
+  background: var(--color-primary);
   color: #fff;
   font-weight: 600;
   cursor: pointer;
