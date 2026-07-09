@@ -1,157 +1,172 @@
+@import 'leaflet/dist/leaflet.css';
 
 :root {
-    /*Primary Colors*/
-    --color-primary: #0073b1; /*Buttons, active links*/
-    --color-primary-dark: #005b8f; /*Hover state for buttons and links*/
-    --color-primary-tint: #e6f2f8; /*Light background*/
+  /* --- Color: primary (blue, energy theme) --- */
+  --color-primary: #0073b1; /* buttons, active state, links */
+  --color-primary-dark: #005b8f; /* hover / pressed state */
+  --color-primary-tint: #e6f2f8; /* selected row / subtle background */
 
-    /*Dark surfaces - sidebar*/
-    --sidebar-bg: #0a2540;
-    --sidebar-hover: #rgba(255, 255, 255, 0.06);
-    --sidebar-text:  #rgba(255, 255, 255, 0.62);
-    --sidebar-text-strong: #ffffff
+  /* --- Color: dark surfaces (sidebar) --- */
+  --sidebar-bg: #0a2540; /* dark blue — replaces the red navy */
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-text: rgba(255, 255, 255, 0.85);
+  --sidebar-text-strong: #ffffff;
 
-    /*Branding colors*/
-    --color-brand-red: #e2001a;
-    --color-danger: #c0263a;
-    --color-danger-tint: #fef2f2;
-    --color-danger-border: #fecaca;
-    --color-success: #1f9d55;
-    --color-success-tint: #dcfce7;
-    --color-warning: #c67c05;
-    --color-warning-tint: #fef3c7;
+  /* --- Color: brand + semantic ---  */
+  --color-brand-red: #e2001a; /* Fronius logo accent ONLY */
+  --color-danger: #b91c1c; /* error text / validation */
+  --color-danger-tint: #fef2f2; /* error box background */
+  --color-danger-border: #fecaca; /* error box border */
+  --color-success: #15803d; /* positive / "Recommendation" badge text */
+  --color-success-tint: #dcfce7; /* green badge background */
+  --color-warning: #92630a; /* warning text */
+  --color-warning-tint: #fef3c7; /* warning box background */
 
-    /*Neutral text - surfaces*/
-    --color-text: #16202a; /*Primary text color*/
-    --color-text-subtle: #3a4756; /*Secondary text color*/
-    --color-text-muted: #6b7684; 
-    --color-text-faint: #9ca3af; /*Tertiary text color*/
-    --color-surface: #ffffff; /*Cards, modals, etc.*/
-    --color-surface-alt: #f5f7f9;
-    --color-bg: #eef2f5; /*Page background*/
-    --color-border: #d7dee5;
-    --color-border-strong: #bcc6cf;
-    --color-divider: #eef1f4;
+  /* --- Color: neutral text + surface --- */
+  --color-text: #16202a; /* main text */
+  --color-text-subtle: #3a4756; /* secondary text (table cells, etc.) */
+  --color-text-muted: #6b7684; /* labels / helper text */
+  --color-text-faint: #9ca3af; /* placeholder / empty state / disabled */
+  --color-surface: #ffffff; /* card / panel background */
+  --color-surface-alt: #f5f7f9; /* inset panel / spec box background */
+  --color-bg: #eef2f5; /* page background (slightly cool gray) */
+  --color-border: #d7dee5; /* line / input border */
+  --color-border-strong: #bcc6cf; /* emphasized border */
+  --color-divider: #eef1f4; /* table row divider (lighter than border) */
 
-    /*Gap Scale*/
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.5rem;
-    --space-6: 2rem;
-    --space-7: 3rem;
 
-    /*Radius Scale*/
-    --radius-sm: 4px;
-    --radius: 8px;
-    --radius-lg: 12px;
-    --radius-pill: 999px
+  /* --- Spacing scale (4px-based — keeps vertical rhythm consistent) --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
 
-    /*Shadow*/
-    --shadow-sm: 0 1px 2px rgba(16,32,42,0.06);
-    --shadow: 0 2px 8px rgba(16,32,42,0.08);
-    --shadow-lg: 0 8px 24px rgba(16,32,42,0.12);
+  /* --- Border radius --- */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
 
-    /*Typography*/
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-mono: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+  /* --- Shadow (sense of elevation — separates cards from the background) --- */
+  --shadow-sm: 0 1px 2px rgba(16, 32, 42, 0.06);
+  --shadow: 0 2px 8px rgba(16, 32, 42, 0.08);
+  --shadow-lg: 0 8px 24px rgba(16, 32, 42, 0.12);
 
-    /*Focus ring*/
-    --focus-ring: 0 0 0 3px rgba(0,115,177,0.28);
+  /* --- Typography --- */
 
-    *,
-    *::before,
-    *::after {box-sizing: border-box; }
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, monospace;
 
-    html,body {height: 100%; }
 
-    body {
-        margin: 0;
-        font-family: var(--font-sans);
-        font-size: 15px;
-        line-height: 1.5;
-        color: var(--color-text);
-        background: var(--color-bg);
-        -webkit-font-smoothing: antialiased; /*MacOS*/
-        -moz-osx-font-smoothing: grayscale; 
-        text-rendering: optimizeLegibility; /*Windows*/
-    }
+  /* --- Focus ring (accessibility + polished feel) --- */
+  --focus-ring: 0 0 0 3px rgba(0, 115, 177, 0.28);
+}
 
-    h1,h2,h3,h4 {
-        margin: 0;
-        color: var(--color-text);
-        font-weight: 600;
-        line-height: 1.25;
-    }
+/* ---------------------------------------------------------------------------
 
-    a {
-        color:var(--color-primary);
-        text-decoration: none;
-        &:hover {
-            color: var(--color-primary-dark);
-        }
-    }
+   Reset + base
 
-    input,select,textarea,button {font-family: inherit; font-size: inherit; }
+   box-sizing:border-box simplifies size calculations everywhere; margins are
 
-    input:not([type='range']), select, textarea {
-        padding: 0.5rem 0.7rem;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius);
-        background: var(--color-surface);
-        color: var(--color-text);
-        transition: border-color 0.15s, box-shadow 0.15s;
+   reset so we can control vertical spacing with the token scale.
 
-        &:focus {
-            outline: none;
-            border-color: var(--color-primary);
-            box-shadow: var(--focus-ring);
-        }
-    }
+   --------------------------------------------------------------------------- */
 
-    :focus-visible {
-        outline: none;
-        box-shadow: var(--focus-ring);
-        border-radius: var(--radius-sm);
-    }   
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-    button {cursor: pointer;}
-    button:disabled {opacity: 0.55; cursor: default;}
+html,
+body {
+  height: 100%;
+}
 
-    /*Reuseable utility classes*/
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased; /* thinner text on macOS/iOS */
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 
-    .btn-primary {
-        padding: 0.6rem 1.4rem;
-        border: none;
-        border-radius: var(--radius);
-        background: var(--color-primary);
-        color: #fff;
-        font-weight: 600;
-        transition: background 0.15s;
-        &:hover:not(:disabled) {
-            background: var(--color-primary-dark);
-        }
-    }
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--color-text);
+  font-weight: 600;
+  line-height: 1.25;
+}
 
-    .btn-ghost {
-        padding: 0.55rem 1.1rem;
-        border: 1px solid var(--color-border-strong);
-        border-radius: var(--radius);
-        background: var(--color-surface);
-        color: var(--color-text-subtle);
-        font-weight: 500;
-        transition: border-color 0.15s, color 0.15s;
-        &:hover:not(:disabled) {
-            border-color: var(--color-primary);
-            color: var(--color-primary);
-        }
-    }
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  &:hover {
+    color: var(--color-primary-dark);
+  }
+}
 
-    .card {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-    }
+/* ---------------------------------------------------------------------------
+
+   Base form controls
+
+   Steps were repeating their own input/button styles; the shared base was moved
+
+   here. Components can still customize them, but the default stays consistent.
+
+   --------------------------------------------------------------------------- */
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input:not([type="range"]),
+select,
+textarea {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: var(--focus-ring); /* visible, branded focus state */
+  }
+}
+
+/* Consistent focus ring on every interactive element when navigating by keyboard */
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
